@@ -2,8 +2,11 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Telegram\Bot\Api;
+use src\ArbeitsTelegramBot;
 
-$response = new Api('6869447683:AAHqKjdi5J6A9DibFTwEuPrxViI-Pww0dP0');
+$bot = new ArbeitsTelegramBot();
+$bot->listen();
+
+
 
 
