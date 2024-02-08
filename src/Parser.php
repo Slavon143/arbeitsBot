@@ -116,30 +116,21 @@ class Parser
     }
 
     function getCity(){
-
-
-// URL для отправки запроса
         $url = 'https://platsbanken-api.arbetsformedlingen.se/taxonomy/v1/trees?type=location';
 
-// Инициализация cURL-сессии
         $ch = curl_init($url);
 
-// Настройка параметров запроса
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Возврат результата запроса в виде строки
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Отключение проверки SSL сертификата (не рекомендуется в рабочем окружении)
 
-// Выполнение запроса и получение ответа
         $response = curl_exec($ch);
 
-// Проверка на наличие ошибок при выполнении запроса
         if (curl_errno($ch)) {
             echo 'Ошибка при выполнении запроса: ' . curl_error($ch);
         }
 
-// Закрытие cURL-сессии
         curl_close($ch);
 
-// Вывод ответа на экран
         return json_decode($response,true);
     }
 }
