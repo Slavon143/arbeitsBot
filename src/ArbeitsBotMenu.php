@@ -50,14 +50,8 @@ class ArbeitsBotMenu
     }
 
     public function platsbankenShowAll($chatId, $objTelegram, $startIndex = null) {
-        // Запрос объявлений с указанным startIndex
-        $getAll = $this->apiArbeits->makeApiRequest('https://platsbanken-api.arbetsformedlingen.se/jobs/v1/search', [
-            'source' => 'pb',
-            'maxRecords' => 25,
-            'startIndex' => $startIndex,
-        ]);
-        $getAll = json_decode($getAll, true);
 
+        $getAll = $this->apiArbeits->showAll($startIndex);
         // Построение меню из объявлений
         $menu = $this->buildMenuFromAds($getAll);
 
@@ -75,12 +69,12 @@ class ArbeitsBotMenu
 
         // Если startIndex больше 0, добавляем кнопку "Назад"
         if ($startIndex > 0) {
-            $buttons[] = [['text' => 'Назад', 'callback_data' => "platsbanken_prev_$startIndex"]];
+            $buttons[] = [['text' => '«Назад', 'callback_data' => "platsbanken_prev_$startIndex"]];
         }
 
         // Если startIndex + 25 меньше либо равно offsetLimit, добавляем кнопку "Далее"
         if ($startIndex + 25 <= $getAll['offsetLimit']) {
-            $buttons[] = [['text' => 'Далее', 'callback_data' => "platsbanken_next_$startIndex"]];
+            $buttons[] = [['text' => 'Далее»', 'callback_data' => "platsbanken_next_$startIndex"]];
         }
 
         // Отправка сообщения с кнопками "Далее" и "Назад"
@@ -96,18 +90,29 @@ class ArbeitsBotMenu
     }
 
     public function buildMenuFromAds($ads) {
-
         $menu = [];
         foreach ($ads['ads'] as $ad) {
+            // Создаем текст кнопки с информацией об объявлении
+            $buttonText =
+                "Заголовок: " . $ad['title'] . "\n" .
+                "Дата публикации: " . $ad['publishedDate'] . "\n" .
+                "Профессия: " . $ad['occupation'] . "\n" .
+                "Место работы: " . $ad['workplace'] . "\n" .
+                "Название места работы: " . $ad['workplaceName'] . "\n" .
+                "Количество позиций: " . $ad['positions'];
+
+            // Создаем кнопку с текстом объявления
             $menu[] = [
                 [
-                    'text' => $ad['title'],
+                    'text' => $buttonText,
                     'callback_data' => 'ad_key_board ' . $ad['id'],
                 ]
             ];
         }
         return $menu;
-
     }
+
+
+
 
 }

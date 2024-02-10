@@ -16,6 +16,19 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
+    public function showAll($startIndex){
+        $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search',[
+            'source' => 'pb',
+            'maxRecords' => 25,
+            'startIndex' => $startIndex,
+        ]);
+
+        $getAll = json_decode($getAll, true);
+
+        return $getAll;
+    }
+
+
     function makeApiRequest($url, $data = [])
     {
         $options = [
