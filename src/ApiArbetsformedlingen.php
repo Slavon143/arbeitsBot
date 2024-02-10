@@ -19,7 +19,7 @@ class ApiArbetsformedlingen
     public function showAll($startIndex){
         $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search',[
             'source' => 'pb',
-            'maxRecords' => 25,
+            'maxRecords' => 5,
             'startIndex' => $startIndex,
         ]);
 

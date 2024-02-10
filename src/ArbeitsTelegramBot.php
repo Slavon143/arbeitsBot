@@ -73,10 +73,10 @@ class ArbeitsTelegramBot
 
         }elseif (strpos($callbackData, 'platsbanken_next_') !== false){
             $platsbanken_next = (int)str_replace('platsbanken_next_', '', $callbackData);
-            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_next+25);
+            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_next+5);
         }elseif (strpos($callbackData, 'platsbanken_prev_') !== false){
             $platsbanken_prew = (int)str_replace('platsbanken_prev_', '', $callbackData);
-            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_prew-25);
+            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_prew-5);
         } else {
 
             switch ($callbackData) {
