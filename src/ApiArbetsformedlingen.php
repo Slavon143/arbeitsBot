@@ -28,6 +28,13 @@ class ApiArbetsformedlingen
         return $getAll;
     }
 
+    public function getOne($id){
+        $request = $this->makeApiRequest($this->platsbanken_api_url."job/$id");
+
+        $request = json_decode($request,1);
+
+        return $request;
+    }
 
     function makeApiRequest($url, $data = [])
     {

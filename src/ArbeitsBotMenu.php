@@ -4,6 +4,7 @@ namespace src;
 
 use src\Parser;
 use src\ApiArbetsformedlingen;
+
 class ArbeitsBotMenu
 {
 
@@ -15,7 +16,8 @@ class ArbeitsBotMenu
         $this->apiArbeits = new ApiArbetsformedlingen();
     }
 
-    public function startMenu($chatId, $objTelegram){
+    public function startMenu($chatId, $objTelegram)
+    {
         $objTelegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Сделайте выбор:',
@@ -32,7 +34,8 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function platsbankenMenu($chatId, $objTelegram){
+    public function platsbankenMenu($chatId, $objTelegram)
+    {
         $objTelegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Сделайте выбор:',
@@ -49,11 +52,12 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function platsbankenShowAll($chatId, $objTelegram, $startIndex = null) {
+    public function platsbankenShowAll($chatId, $objTelegram, $startIndex = null)
+    {
 
         $getAll = $this->apiArbeits->showAll($startIndex);
         // Построение меню из объявлений
-         $this->buildMenuFromAds($getAll,$chatId,$objTelegram);
+        $this->buildMenuFromAds($getAll, $chatId, $objTelegram);
 
         // Создание массива для кнопок "Далее" и "Назад"
         $buttons = [];
@@ -80,7 +84,8 @@ class ArbeitsBotMenu
         }
     }
 
-    public function buildMenuFromAds($ads,$chatId,$objTelegram) {
+    public function buildMenuFromAds($ads, $chatId, $objTelegram)
+    {
         $menu = [];
         foreach ($ads['ads'] as $ad) {
             // Создаем текст кнопки с информацией об объявлении
@@ -115,33 +120,48 @@ class ArbeitsBotMenu
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
                         [
-                            ['text' => '⬇️', 'callback_data' => 'ad_key_board ' . $ad['id']],
+                            ['text' => '⬇️', 'callback_data' => 'ad_key_board_' . $ad['id']],
                         ]
                     ],
                 ]),
             ]);
 
-
-//            $buttonText =
-//                "Заголовок: " . $ad['title'] . "\n" .
-//                "Дата публикации: " . $ad['publishedDate'] . "\n" .
-//                "Профессия: " . $ad['occupation'] . "\n" .
-//                "Место работы: " . $ad['workplace'] . "\n" .
-//                "Название места работы: " . $ad['workplaceName'] . "\n" .
-//                "Количество позиций: " . $ad['positions'];
-//
-//            // Создаем кнопку с текстом объявления
-//            $menu[] = [
-//                [
-//                    'text' => $buttonText,
-//                    'callback_data' => 'ad_key_board ' . $ad['id'],
-//                ]
-//            ];
         }
-//        return $menu;
     }
 
+    public function showOne($chatId, $telegram, $key_board)
+    {
 
+        $ad = $this->apiArbeits->getOne($key_board);
+        $title = isset($ad['title']) && !empty($ad['title']) ? strip_tags($ad['title']) : '';
+        $description = isset($ad['description']) && !empty($ad['description']) ? strip_tags($ad['description']) : '';
+        $publishedDate = isset($ad['publishedDate']) && !empty($ad['publishedDate']) ? strip_tags($ad['publishedDate']) : '';
+        $occupation = isset($ad['occupation']) && !empty($ad['occupation']) ? strip_tags($ad['occupation']) : '';
+        $companyName = isset($ad['company']['name']) && !empty($ad['company']['name']) ? strip_tags($ad['company']['name']) : '';
+        $webAddress = isset($ad['company']['webAddress']) && !empty($ad['company']['webAddress']) ? strip_tags($ad['company']['webAddress']) : '';
+        $phoneNumber = isset($ad['company']['phoneNumber']) && !empty($ad['company']['phoneNumber']) ? strip_tags($ad['company']['phoneNumber']) : '';
+        $email = isset($ad['company']['email']) && !empty($ad['company']['email']) ? strip_tags($ad['company']['email']) : '';
+        $organisationNumber = isset($ad['company']['organisationNumber']) && !empty($ad['company']['organisationNumber']) ? strip_tags($ad['company']['organisationNumber']) : '';
+        $region = isset($ad['workplace']['region']) && !empty($ad['workplace']['region']) ? strip_tags($ad['workplace']['region']) : '';
+        $municipality = isset($ad['workplace']['municipality']) && !empty($ad['workplace']['municipality']) ? strip_tags($ad['workplace']['municipality']) : '';
 
+        $additionalInfo =
+            (!empty($occupation) ? "<b>Профессия:</b> " . $occupation . "\n" : '') .
+            (!empty($description) ? "<b>Описание:</b> " . $description . "\n" : '') .
+            (!empty($companyName) ? "<b>Название компании:</b> " . $companyName . "\n" : '') .
+            (!empty($webAddress) ? "<b>Веб-адрес компании:</b> " . $webAddress . "\n" : '') .
+            (!empty($phoneNumber) ? "<b>Телефон компании:</b> " . $phoneNumber . "\n" : '') .
+            (!empty($email) ? "<b>Email компании:</b> " . $email . "\n" : '') .
+            (!empty($organisationNumber) ? "<b>Организационный номер компании:</b> " . $organisationNumber . "\n" : '') .
+            (!empty($region) ? "<b>Регион:</b> " . $region . "\n" : '') .
+            (!empty($municipality) ? "<b>Муниципалитет:</b> " . $municipality . "\n" : '') .
+            (!empty($publishedDate) ? "<b>Дата публикации:</b> " . $publishedDate . "\n" : '');
 
+        // Отправляем сообщение с основной информацией о каждом объявлении
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => "<b>$title</b>\n$additionalInfo",
+            'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
+        ]);
+    }
 }

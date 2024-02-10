@@ -5,7 +5,7 @@ namespace src;
 use Telegram\Bot\Api;
 use Symfony\Component\Dotenv\Dotenv;
 use src\ArbeitsBotMenu;
-
+use Telegram\Bot\Objects\Message;
 
 class ArbeitsTelegramBot
 {
@@ -71,6 +71,10 @@ class ArbeitsTelegramBot
             $this->handleRegionMenu($chatId, $regionKey);
         }elseif (strpos($callbackData, 'city_key_board') !== false){
 
+        }elseif (strpos($callbackData, 'ad_key_board') !== false){
+            $key_board = str_replace('ad_key_board_', '', $callbackData);
+            $this->menu->showOne($chatId,$this->telegram,$key_board);
+            $this->debug($key_board);
         }elseif (strpos($callbackData, 'platsbanken_next_') !== false){
             $platsbanken_next = (int)str_replace('platsbanken_next_', '', $callbackData);
             $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_next+5);
