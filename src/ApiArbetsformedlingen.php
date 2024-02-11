@@ -16,12 +16,24 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
-    public function showAll($startIndex){
-        $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search',[
-            'source' => 'pb',
-            'maxRecords' => 5,
-            'startIndex' => $startIndex,
-        ]);
+    public function showAll($startIndex, $cityId) {
+        $filters = array();
+        if ($cityId !== null) {
+            $filters[] = array(
+                "type" => "municipality",
+                "value" => $cityId
+            );
+        }
+
+        $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search', array(
+            "filters" => $filters,
+            "fromDate" => null,
+            "order" => "relevance",
+            "maxRecords" => 5,
+            "startIndex" => $startIndex,
+            "toDate" => "2024-02-11T18:18:34.053Z",
+            "source" => "pb"
+        ));
 
         $getAll = json_decode($getAll, true);
 

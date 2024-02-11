@@ -41,8 +41,9 @@ class ArbeitsTelegramBot
         }
     }
 
-    public function debug($arr){
-        file_put_contents(__DIR__ . '/test.txt',var_export($arr,1));
+    public function debug($arr)
+    {
+        file_put_contents(__DIR__ . '/test.txt', var_export($arr, 1));
     }
 
     protected function handleMessage($message)
@@ -52,7 +53,7 @@ class ArbeitsTelegramBot
 
         switch ($messageText) {
             case '/start':
-                $this->menu->startMenu($chatId,$this->telegram);
+                $this->menu->startMenu($chatId, $this->telegram);
                 break;
             default:
                 break;
@@ -63,35 +64,69 @@ class ArbeitsTelegramBot
     {
         $callbackData = $callbackQuery['data'];
         $chatId = $callbackQuery['message']['chat']['id'];
+        $menu = $this->menu;
 
-        if (strpos($callbackData, 'platsbanken_filter_ort') !== false){
-            $this->menu->showRegion($chatId,$this->telegram);
-        }elseif (strpos($callbackData, 'filter_region_id_') !== false){
-            $region_id = str_replace('filter_region_id_', '', $callbackData);
-            $this->menu->showCity($chatId,$this->telegram,$region_id);
-        }elseif (strpos($callbackData, 'platsbanken_filter') !== false){
-            $this->menu->platsbankenFilter($chatId,$this->telegram);
-        }elseif (strpos($callbackData, 'ad_key_board_') !== false){
-            $key_board = str_replace('ad_key_board_', '', $callbackData);
-            $this->menu->showOne($chatId,$this->telegram,$key_board);
-        }elseif (strpos($callbackData, 'platsbanken_next_') !== false){
-            $platsbanken_next = (int)str_replace('platsbanken_next_', '', $callbackData);
-            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_next+5);
-        }elseif (strpos($callbackData, 'platsbanken_prev_') !== false){
-            $platsbanken_prew = (int)str_replace('platsbanken_prev_', '', $callbackData);
-            $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_prew-5);
-        } else {
+        if ($this->isJson($callbackData)) {
+            $callbackData = json_decode($callbackData, true);
+        }
 
-            switch ($callbackData) {
-                case 'platsbanken':
-                    $this->menu->platsbankenMenu($chatId,$this->telegram);
-                    break;
-                case 'platsbanken_show_all':
-                    $this->menu->platsbankenShowAll($chatId,$this->telegram);
-                    break;
-                default:
-                    break;
-            }
+        switch (true) {
+            case array_key_exists('platsbanken', $callbackData):
+                $menu->platsbankenMenu($chatId, $this->telegram);
+                break;
+            case array_key_exists('platsbanken_show_all', $callbackData):
+                $menu->platsbankenShowAll($chatId, $this->telegram);
+                break;
+            case array_key_exists('platsbanken_next', $callbackData):
+                $offset = $callbackData['page'];
+                $sityId = $callbackData['city_id'];
+                if ($offset === null) {
+                    $offset += 5;
+                }
+                $this->debug($callbackQuery);
+                $menu->platsbankenShowAll($chatId, $this->telegram, $offset,$sityId);
+                break;
+            case array_key_exists('platsbanken_prev', $callbackData):
+                $offset = $callbackData['page'];
+                $sityId = $callbackData['city_id'];
+              if($offset >= 5){
+                  $offset -= 5;
+              }
+                $menu->platsbankenShowAll($chatId, $this->telegram, $offset,$sityId);
+                break;
+            case array_key_exists('platsbanken_filter', $callbackData):
+                $menu->platsbankenFilter($chatId, $this->telegram);
+                break;
+            case array_key_exists('show_detail_page', $callbackData):
+                $detail_id = $callbackData['detail_id'];
+                $menu->showOne($chatId, $this->telegram, $detail_id);
+                break;
+            case array_key_exists('platsbanken_filter_ort', $callbackData):
+                $menu->showRegion($chatId, $this->telegram);
+                break;
+            case array_key_exists('filter_region_id', $callbackData):
+                $region_id = $callbackData['filter_region_id'];
+                $menu->showCity($chatId, $this->telegram, $region_id);
+                break;
+            case array_key_exists('filter_city_id', $callbackData):
+                $filter_city_id = $callbackData['filter_city_id'];
+                $menu->showFilterChose($chatId, $this->telegram, $filter_city_id);
+                break;
+            case array_key_exists('show_all_filter_city', $callbackData):
+                $city_id = $callbackData['city_id'];
+                $menu->platsbankenShowAll($chatId, $this->telegram, null,$city_id);
+                break;
+            default:
+                break;
         }
     }
+
+    function isJson($string)
+    {
+        json_decode($string);
+
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
+
+
 }
