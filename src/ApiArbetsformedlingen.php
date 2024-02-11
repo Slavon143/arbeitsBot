@@ -36,6 +36,14 @@ class ApiArbetsformedlingen
         return $request;
     }
 
+    public function getLocation(){
+        $location = $this->makeApiRequest($_ENV['PLATS_URL_LOCATION']);
+        if ($location){
+            $location = json_decode($location,true);
+            return $location;
+        }
+    }
+
     function makeApiRequest($url, $data = [])
     {
         $options = [

@@ -52,6 +52,76 @@ class ArbeitsBotMenu
         ]);
     }
 
+    public function showRegion($chatId, $telegram)
+    {
+        // Получение данных для кнопок
+        $getLocation = $this->apiArbeits->getLocation();
+
+// Создание массива кнопок
+        $buttons = [];
+
+        foreach ($getLocation as $item) {
+            $id = $item['id'];
+            $name = $item['name'];
+            $buttons[] = [
+                ['text' => $name,
+                    'callback_data' => 'filter_region_id_' . $id]
+            ];
+        }
+
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите ргион:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => $buttons
+            ]),
+        ]);
+    }
+
+    public function showCity($chatId,$telegram,$region_id){
+        $getLocation = $this->apiArbeits->getLocation();
+
+        $buttons = [];
+
+        foreach ($getLocation as $item){
+            if ($item['id'] == $region_id){
+                foreach ($item['items'] as $city){
+                    $id = $city['id'];
+                    $name = $city['name'];
+                    $buttons[] = [
+                        ['text' => $name,
+                            'callback_data' => 'filter_city_id_' . $id]
+                    ];
+                }
+            }
+        }
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите город:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => $buttons
+            ]),
+        ]);
+
+    }
+
+    public function platsbankenFilter($chatId,$telegram){
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Сделайте выбор:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'Ort (Место)', 'callback_data' => 'platsbanken_filter_ort'],
+                        ['text' => 'Yrke (Профессия)', 'callback_data' => 'platsbanken_filter_yrke']
+                    ]
+                ],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => true
+            ])
+        ]);
+    }
+
     public function platsbankenShowAll($chatId, $objTelegram, $startIndex = null)
     {
 
@@ -60,20 +130,28 @@ class ArbeitsBotMenu
         $this->buildMenuFromAds($getAll, $chatId, $objTelegram);
 
         // Создание массива для кнопок "Далее" и "Назад"
-        $buttons = [];
+        $buttons = [
+            [
+                ['text' => '', 'callback_data' => 'platsbanken_filter_ort'],
+                ['text' => '', 'callback_data' => 'platsbanken_filter_yrke']
+            ]
+        ];
 
         // Если startIndex больше 0, добавляем кнопку "Назад"
         if ($startIndex > 0) {
-            $buttons[] = [['text' => '«Назад', 'callback_data' => "platsbanken_prev_$startIndex"]];
+            $buttons[0][0]['text'] = '⬅️ Назад';
+            $buttons[0][0]['callback_data'] = "platsbanken_prev_$startIndex";
         }
 
         // Если startIndex + 5 меньше либо равно offsetLimit, добавляем кнопку "Далее"
         if ($startIndex + 5 <= $getAll['offsetLimit']) {
-            $buttons[] = [['text' => 'Далее»', 'callback_data' => "platsbanken_next_$startIndex"]];
+            $buttons[0][1]['text'] = 'Далее ➡️';
+            $buttons[0][1]['callback_data'] = "platsbanken_next_$startIndex";
         }
 
         // Отправка сообщения с кнопками "Далее" и "Назад"
         if (!empty($buttons)) {
+            file_put_contents(__DIR__ . '/rrr.txt',var_export($buttons,1));
             $objTelegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => 'Выберите действие:',
@@ -86,10 +164,10 @@ class ArbeitsBotMenu
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram)
     {
-        $menu = [];
-        foreach ($ads['ads'] as $ad) {
-            // Создаем текст кнопки с информацией об объявлении
+        $messages = []; // Массив для хранения текста сообщений с полной информацией
 
+        foreach ($ads['ads'] as $ad) {
+            // Создаем текст сообщения с полной информацией об объявлении
             $title = $ad['title'];
             $publishedDate = $ad['publishedDate'];
             $occupation = $ad['occupation'];
@@ -97,10 +175,6 @@ class ArbeitsBotMenu
             $workplaceName = $ad['workplaceName'];
             $positions = $ad['positions'];
 
-            // Создаем текст кнопки с заголовком объявления
-            $buttonText = $title;
-
-            // Создаем текст с остальной информацией для вывода под кнопкой
             $additionalInfo =
                 "<b>Дата публикации:</b> " . $publishedDate . "\n" .
                 "<b>Профессия:</b> " . $occupation . "\n" .
@@ -108,24 +182,33 @@ class ArbeitsBotMenu
                 "<b>Название места работы:</b> " . $workplaceName . "\n" .
                 "<b>Количество позиций:</b> " . $positions;
 
-            // Отправляем сообщение с полной информацией о каждом объявлении под кнопкой
-            $objTelegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => "<b>$title</b>\n$additionalInfo",
-                'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
-            ]);
-            $objTelegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => 'Подробнее',
-                'reply_markup' => json_encode([
-                    'inline_keyboard' => [
-                        [
-                            ['text' => '⬇️', 'callback_data' => 'ad_key_board_' . $ad['id']],
-                        ]
-                    ],
-                ]),
-            ]);
+            // Создаем текст сообщения
+            $messageText = "<b>$title</b>\n$additionalInfo";
 
+            // Формируем кнопку "Подробнее" для каждого объявления
+            $menu = [
+                [
+                    'text' => '⏬ Подробнее',
+                    'callback_data' => 'ad_key_board_' . $ad['id'],
+                ]
+            ];
+
+            // Добавляем текст сообщения и кнопку в массив сообщений
+            $messages[] = [
+                'text' => $messageText,
+                'reply_markup' => json_encode(['inline_keyboard' => [$menu]]),
+                'parse_mode' => 'HTML',
+            ];
+        }
+
+        // Отправляем сообщения с полной информацией об объявлениях
+        foreach ($messages as $message) {
+            $objTelegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $message['text'],
+                'reply_markup' => $message['reply_markup'],
+                'parse_mode' => $message['parse_mode'],
+            ]);
         }
     }
 

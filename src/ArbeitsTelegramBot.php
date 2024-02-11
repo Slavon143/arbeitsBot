@@ -25,8 +25,6 @@ class ArbeitsTelegramBot
         $this->incomingRequest = json_decode(file_get_contents('php://input'), true);
         $this->telegram = new Api($this->token);
 
-        $this->parser = new Parser();
-
         $this->menu = new \src\ArbeitsBotMenu();
     }
 
@@ -66,15 +64,16 @@ class ArbeitsTelegramBot
         $callbackData = $callbackQuery['data'];
         $chatId = $callbackQuery['message']['chat']['id'];
 
-        if (strpos($callbackData, 'region_key_board') !== false) {
-            $regionKey = str_replace('region_key_board ', '', $callbackData);
-            $this->handleRegionMenu($chatId, $regionKey);
-        }elseif (strpos($callbackData, 'city_key_board') !== false){
-
-        }elseif (strpos($callbackData, 'ad_key_board') !== false){
+        if (strpos($callbackData, 'platsbanken_filter_ort') !== false){
+            $this->menu->showRegion($chatId,$this->telegram);
+        }elseif (strpos($callbackData, 'filter_region_id_') !== false){
+            $region_id = str_replace('filter_region_id_', '', $callbackData);
+            $this->menu->showCity($chatId,$this->telegram,$region_id);
+        }elseif (strpos($callbackData, 'platsbanken_filter') !== false){
+            $this->menu->platsbankenFilter($chatId,$this->telegram);
+        }elseif (strpos($callbackData, 'ad_key_board_') !== false){
             $key_board = str_replace('ad_key_board_', '', $callbackData);
             $this->menu->showOne($chatId,$this->telegram,$key_board);
-            $this->debug($key_board);
         }elseif (strpos($callbackData, 'platsbanken_next_') !== false){
             $platsbanken_next = (int)str_replace('platsbanken_next_', '', $callbackData);
             $this->menu->platsbankenShowAll($chatId,$this->telegram,$platsbanken_next+5);
