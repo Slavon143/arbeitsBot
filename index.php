@@ -6,3 +6,4 @@ use src\ArbeitsTelegramBot;
 
 $bot = new ArbeitsTelegramBot();
 $bot->listen();
+

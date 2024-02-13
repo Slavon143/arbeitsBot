@@ -168,9 +168,13 @@ class ArbeitsBotMenu
     }
 
 
-    public function platsbankenShowOccupation($chatId, $telegram, $city_id)
+    public function platsbankenShowOccupation($chatId, $telegram, $city_id,$translate = null)
     {
         $occupation = $this->apiArbeits->getOccupation();
+        if ($translate){
+            $translateApi = new TranslateApi();
+            $occupation = Helper::occupationDataTranslate($occupation,$translateApi);
+        }
         $buttons = [];
 
         // Разбиваем кнопки на два ряда
@@ -204,6 +208,20 @@ class ArbeitsBotMenu
             'text' => 'Выберите направление:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
+            ]),
+        ]);
+
+        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $ukrainian_flag_unicode . ' Перевести:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate_occupation' => $city_id])]
+                    ]
+                ]
             ]),
         ]);
     }
@@ -333,7 +351,7 @@ class ArbeitsBotMenu
         //newArray
         require __DIR__ . '/../settings/ArraySettings.php';
 
-        $str = Helper::processJobData($ad,$newArray);
+        $str = Helper::processJobData($ad,$newArrayUa);
 
         $telegram->sendMessage([
             'chat_id' => $chatId,

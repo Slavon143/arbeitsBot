@@ -54,4 +54,38 @@ class Helper
         file_put_contents(__DIR__ . '/classDebug.txt', var_export($data, 1));
     }
 
+    public static function occupationDataTranslate($array, $trans) {
+        // Проверяем наличие элементов в массиве
+        if (empty($array)) {
+            return [];
+        }
+
+        $str = '';
+        foreach ($array as $key => $value) {
+            // Проверяем наличие ожидаемых ключей в массиве
+            if (isset($value['name'], $value['id'])) {
+                $str .= $value['name'] . '&&' . $value['id'] . ">>>";
+            }
+        }
+
+        // Переводим строку
+        $transStr = $trans->translate($str);
+        $transStr = explode(">>>", $transStr);
+
+        $res = [];
+        foreach ($transStr as $value) {
+            // Разбиваем строку на части по символу '&&'
+            $parts = explode("&&", $value);
+
+            // Проверяем, что массив содержит обе части (name и id)
+            if (isset($parts[0], $parts[1])) {
+                $res[] = [
+                    'name' => $parts[0],
+                    'id' => $parts[1]
+                ];
+            }
+        }
+        return $res;
+    }
+
 }

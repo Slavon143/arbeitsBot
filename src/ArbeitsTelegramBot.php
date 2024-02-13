@@ -53,6 +53,7 @@ class ArbeitsTelegramBot
         switch ($messageText) {
             case '/start':
                 $this->menu->startMenu($chatId, $this->telegram);
+                Helper::debug($_SESSION);
                 break;
             default:
                 break;
@@ -64,21 +65,17 @@ class ArbeitsTelegramBot
         $callbackData = $callbackQuery['data'];
         $chatId = $callbackQuery['message']['chat']['id'];
         $menu = $this->menu;
-        $messageId = $callbackQuery['message']['message_id'];
+
         if ($this->isJson($callbackData)) {
             $callbackData = json_decode($callbackData, true);
         }
 
         switch (true) {
 
-
             case array_key_exists('translate', $callbackData):
-
                 $translate_id = $callbackData['translate'];
                 $this->menu->showOneTranslate($chatId, $this->telegram, $translate_id);
-
                 break;
-
             case array_key_exists('platsbanken', $callbackData):
                 $menu->showRegion($chatId, $this->telegram);
                 break;
@@ -89,6 +86,10 @@ class ArbeitsTelegramBot
             case array_key_exists('show_occupation', $callbackData):
                 $city_id = $callbackData['city_id'];
                 $menu->platsbankenShowOccupation($chatId, $this->telegram,$city_id);
+                break;
+            case array_key_exists('translate_occupation', $callbackData):
+                $city_id = $callbackData['city_id'];
+                $menu->platsbankenShowOccupation($chatId, $this->telegram,$city_id,true);
                 break;
             case array_key_exists('show_specialist', $callbackData):
                 $city_id = $callbackData['city_id'];
