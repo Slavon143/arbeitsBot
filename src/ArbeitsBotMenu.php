@@ -79,37 +79,18 @@ class ArbeitsBotMenu
     {
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
-
-        // Разбиваем кнопки на два ряда
-        $columns = 2;
-        $current_column = 0;
-        $current_row = [];
-
         foreach ($occupation as $item) {
             if ($item['id'] == $occupation_id) {
                 foreach ($item['items'] as $profession) {
                     $id = $profession['id'];
                     $name = $profession['name'];
-
-                    // Добавляем кнопку в текущий ряд
-                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
-
-                    // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
-                    $current_column++;
-                    if ($current_column >= $columns) {
-                        $buttons[] = $current_row;
-                        $current_row = [];
-                        $current_column = 0;
-                    }
+                    $buttons[] = [
+                        ['text' => $name,
+                            'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]
+                    ];
                 }
             }
         }
-
-        // Если остался неполный ряд, добавляем его в массив кнопок
-        if (!empty($current_row)) {
-            $buttons[] = $current_row;
-        }
-
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите специальность:',
@@ -117,8 +98,8 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-    }
 
+    }
 
     public function showCity($chatId, $telegram, $region_id)
     {
@@ -303,7 +284,7 @@ class ArbeitsBotMenu
         }
     }
 
-    public function truncateText($text, $length = 2000)
+    public function truncateText($text, $length = 1000)
     {
         // Обрезаем текст до заданной длины
         $truncatedText = mb_substr($text, 0, $length);
@@ -316,50 +297,47 @@ class ArbeitsBotMenu
     {
         $ad = $this->apiArbeits->getOne($key_board);
 
-        $title = isset($ad['title']) && !empty($ad['title']) ? strip_tags($ad['title']) : '';
-        $description = isset($ad['description']) && !empty($ad['description']) ? strip_tags($ad['description']) : '';
-        $publishedDate = isset($ad['publishedDate']) && !empty($ad['publishedDate']) ? strip_tags($ad['publishedDate']) : '';
-        $occupation = isset($ad['occupation']) && !empty($ad['occupation']) ? strip_tags($ad['occupation']) : '';
-        $companyName = isset($ad['company']['name']) && !empty($ad['company']['name']) ? strip_tags($ad['company']['name']) : '';
-        $webAddress = isset($ad['company']['webAddress']) && !empty($ad['company']['webAddress']) ? strip_tags($ad['company']['webAddress']) : '';
-        $phoneNumber = isset($ad['company']['phoneNumber']) && !empty($ad['company']['phoneNumber']) ? strip_tags($ad['company']['phoneNumber']) : '';
-        $email = isset($ad['company']['email']) && !empty($ad['company']['email']) ? strip_tags($ad['company']['email']) : '';
-        $organisationNumber = isset($ad['company']['organisationNumber']) && !empty($ad['company']['organisationNumber']) ? strip_tags($ad['company']['organisationNumber']) : '';
-        $region = isset($ad['workplace']['region']) && !empty($ad['workplace']['region']) ? strip_tags($ad['workplace']['region']) : '';
-        $municipality = isset($ad['workplace']['municipality']) && !empty($ad['workplace']['municipality']) ? strip_tags($ad['workplace']['municipality']) : '';
+        //newArray
+        require __DIR__ . '/../settings/ArraySettings.php';
 
-        // Информация о контакте
-        $contactsInfo = isset($ad['contacts'][0]) ? $ad['contacts'][0] : [];
-        $contactName = isset($contactsInfo['description']) ? strip_tags($contactsInfo['description']) : '';
-        $contactEmail = isset($contactsInfo['email']) ? strip_tags($contactsInfo['email']) : '';
-        $contactPhoneNumber = isset($contactsInfo['phoneNumber']) ? strip_tags($contactsInfo['phoneNumber']) : '';
+        $flattenedArray = $this->flattenArray($ad);
+        $flattenedArray['description'] = $this->truncateText(strip_tags(str_ireplace("\n", '', $flattenedArray['description'])));
+        $rename = $this->renameKeys($flattenedArray, $newArray);
 
-        // Информация о заявке
-        $applicationInfo = isset($ad['application']) ? $ad['application'] : [];
-        $webAddressApplication = isset($applicationInfo['webAddress']) ? $applicationInfo['webAddress'] : '';
+        $str = '';
+        foreach ($rename as $key => $item) {
+            $str .= '<b>' . $key . '</b>' . ': ' . $item . "\n";
+        }
 
-        $additionalInfo =
-            (!empty($occupation) ? "<b>Профессия:</b> " . $occupation . "\n" : '') .
-            (!empty($description) ? "<b>Описание:</b> " . $this->truncateText($description) . "\n" : '') .
-            (!empty($companyName) ? "<b>Название компании:</b> " . $companyName . "\n" : '') .
-            (!empty($webAddress) ? "<b>Веб-адрес компании:</b> " . $webAddress . "\n" : '') .
-            (!empty($phoneNumber) ? "<b>Телефон компании:</b> " . $phoneNumber . "\n" : '') .
-            (!empty($email) ? "<b>Email компании:</b> " . $email . "\n" : '') .
-            (!empty($organisationNumber) ? "<b>Организационный номер компании:</b> " . $organisationNumber . "\n" : '') .
-            (!empty($region) ? "<b>Регион:</b> " . $region . "\n" : '') .
-            (!empty($municipality) ? "<b>Муниципалитет:</b> " . $municipality . "\n" : '') .
-            (!empty($publishedDate) ? "<b>Дата публикации:</b> " . $publishedDate . "\n" : '') .
-            (!empty($contactName) ? "<b>Контактное лицо:</b> " . $contactName . "\n" : '') .
-            (!empty($contactEmail) ? "<b>Email контактного лица:</b> " . $contactEmail . "\n" : '') .
-            (!empty($contactPhoneNumber) ? "<b>Телефон контактного лица:</b> " . $contactPhoneNumber . "\n" : '') .
-            (!empty($webAddressApplication) ? "<b>Ссылка на заявку:</b> " . $webAddressApplication . "\n" : '');
-
-        // Отправляем сообщение с основной информацией о каждом объявлении
         $telegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => "<b>$title</b>\n$additionalInfo",
+            'text' => $str,
             'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
         ]);
+    }
+
+    public function renameKeys($array, $renameArray)
+    {
+        $result = [];
+        foreach ($renameArray as $oldKey => $newKey) {
+            if (isset($array[$oldKey])) {
+                $result[$newKey] = $array[$oldKey];
+            }
+        }
+        return $result;
+    }
+
+    public function flattenArray($array, $prefix = '')
+    {
+        $result = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $result = array_merge($result, $this->flattenArray($value, $prefix . $key . '_'));
+            } elseif (!empty($value)) {
+                $result[$prefix . $key] = $value;
+            }
+        }
+        return $result;
     }
 
     public function debug($data)
