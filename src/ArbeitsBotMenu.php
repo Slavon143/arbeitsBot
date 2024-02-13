@@ -3,7 +3,6 @@
 namespace src;
 
 use src\Parser;
-use src\ApiArbetsformedlingen;
 
 class ArbeitsBotMenu
 {
@@ -79,18 +78,41 @@ class ArbeitsBotMenu
     {
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
+
+        // Указываем количество колонок
+        $columns = 2;
+
+        // Инициализируем переменные для текущей колонки и строки
+        $current_column = 0;
+        $current_row = [];
+
         foreach ($occupation as $item) {
             if ($item['id'] == $occupation_id) {
                 foreach ($item['items'] as $profession) {
                     $id = $profession['id'];
                     $name = $profession['name'];
-                    $buttons[] = [
-                        ['text' => $name,
-                            'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]
-                    ];
+
+                    // Добавляем кнопку в текущую строку
+                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
+
+                    // Увеличиваем счетчик текущей колонки
+                    $current_column++;
+
+                    // Если текущая колонка достигла максимальной ширины, добавляем текущую строку в массив кнопок и создаем новую строку
+                    if ($current_column >= $columns) {
+                        $buttons[] = $current_row;
+                        $current_row = [];
+                        $current_column = 0;
+                    }
                 }
             }
         }
+
+        // Если осталась неполная строка, добавляем ее в массив кнопок
+        if (!empty($current_row)) {
+            $buttons[] = $current_row;
+        }
+
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите специальность:',
@@ -98,8 +120,8 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
     }
+
 
     public function showCity($chatId, $telegram, $region_id)
     {
