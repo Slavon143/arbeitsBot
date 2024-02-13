@@ -2,16 +2,15 @@
 
 namespace src;
 
-use src\Parser;
-
 class ArbeitsBotMenu
 {
     public $apiArbeits;
-
+    public $apiTranslate;
 
     public function __construct()
     {
         $this->apiArbeits = new ApiArbetsformedlingen();
+        $this->apiTranslate = new TranslateApi();
     }
 
     public function startMenu($chatId, $objTelegram)
@@ -71,6 +70,7 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
+
     }
 
 
@@ -306,13 +306,24 @@ class ArbeitsBotMenu
         }
     }
 
-    public function truncateText($text, $length = 1000)
-    {
-        // Обрезаем текст до заданной длины
-        $truncatedText = mb_substr($text, 0, $length);
-        // Удаляем последнее слово, чтобы избежать обрыва слова
-        $truncatedText = preg_replace('/\s+?(\S+)?$/', '', $truncatedText);
-        return $truncatedText;
+    public function showOneTranslate($chatId, $telegram, $key_board){
+        $ad = $this->apiArbeits->getOne($key_board);
+
+        //newArray
+        require __DIR__ . '/../settings/ArraySettings.php';
+
+        $translate = Helper::processJobData($ad,$newArray);
+
+        $translate = $this->apiTranslate->translate($translate);
+
+        if (!empty($translate)){
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => strip_tags($translate),
+                'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
+            ]);
+        }
+
     }
 
     public function showOne($chatId, $telegram, $key_board)
@@ -322,48 +333,27 @@ class ArbeitsBotMenu
         //newArray
         require __DIR__ . '/../settings/ArraySettings.php';
 
-        $flattenedArray = $this->flattenArray($ad);
-        $flattenedArray['description'] = $this->truncateText(strip_tags(str_ireplace("\n", '', $flattenedArray['description'])));
-        $rename = $this->renameKeys($flattenedArray, $newArray);
-
-        $str = '';
-        foreach ($rename as $key => $item) {
-            $str .= '<b>' . $key . '</b>' . ': ' . $item . "\n";
-        }
+        $str = Helper::processJobData($ad,$newArray);
 
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => $str,
             'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
         ]);
+
+        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $ukrainian_flag_unicode . ' Перевести:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate' => $key_board])]
+                    ]
+                ]
+            ]),
+        ]);
     }
 
-    public function renameKeys($array, $renameArray)
-    {
-        $result = [];
-        foreach ($renameArray as $oldKey => $newKey) {
-            if (isset($array[$oldKey])) {
-                $result[$newKey] = $array[$oldKey];
-            }
-        }
-        return $result;
-    }
-
-    public function flattenArray($array, $prefix = '')
-    {
-        $result = [];
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $result = array_merge($result, $this->flattenArray($value, $prefix . $key . '_'));
-            } elseif (!empty($value)) {
-                $result[$prefix . $key] = $value;
-            }
-        }
-        return $result;
-    }
-
-    public function debug($data)
-    {
-        file_put_contents(__DIR__ . '/classDebug.txt', var_export($data, 1));
-    }
 }

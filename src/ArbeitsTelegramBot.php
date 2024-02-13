@@ -12,7 +12,6 @@ class ArbeitsTelegramBot
     protected $token;
     protected $incomingRequest;
     protected $telegram;
-    protected $parser;
 
     protected $menu;
 
@@ -65,12 +64,21 @@ class ArbeitsTelegramBot
         $callbackData = $callbackQuery['data'];
         $chatId = $callbackQuery['message']['chat']['id'];
         $menu = $this->menu;
-
+        $messageId = $callbackQuery['message']['message_id'];
         if ($this->isJson($callbackData)) {
             $callbackData = json_decode($callbackData, true);
         }
 
         switch (true) {
+
+
+            case array_key_exists('translate', $callbackData):
+
+                $translate_id = $callbackData['translate'];
+                $this->menu->showOneTranslate($chatId, $this->telegram, $translate_id);
+
+                break;
+
             case array_key_exists('platsbanken', $callbackData):
                 $menu->showRegion($chatId, $this->telegram);
                 break;
