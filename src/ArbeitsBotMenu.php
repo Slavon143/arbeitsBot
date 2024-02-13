@@ -153,28 +153,30 @@ class ArbeitsBotMenu
         $currentPage = $startIndex / 5 + 1; // Рассчитываем номер текущей страницы
         $totalPages = ceil($numberOfAds / 5); // Рассчитываем общее количество страниц
 
-        // Добавляем кнопку "Назад"
+        // Создаем кнопки
+        $left_button = ['text' => '←', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])];
+        $right_button = ['text' => '→', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])];
+
+        // Проверяем, нужно ли показывать кнопку "Назад"
         if ($startIndex > 0) {
-            $inlineKeyboard[] = [['text' => '<< Назад (' . $currentPage . '/' . $totalPages . ')', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])]];
+            $inlineKeyboard[] = $left_button;
         }
 
-        // Добавляем кнопку "Вперед"
-        $endIndex = $this->calculatePageCount($numberOfAds, 5);
-        if ($endIndex > $startIndex && $numberOfAds > $startIndex + 5) {
-            $inlineKeyboard[] = [['text' => 'Вперед >> (' . $currentPage . '/' . $totalPages . ')', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])]];
+        // Добавляем кнопку со страницами
+        $page_button = ['text' => $currentPage . '/' . $totalPages, 'callback_data' => 'None'];
+        $inlineKeyboard[] = $page_button;
+
+        // Проверяем, нужно ли показывать кнопку "Вперед"
+        if ($startIndex + 5 < $numberOfAds) {
+            $inlineKeyboard[] = $right_button;
         }
 
+        // Отправляем сообщение с клавиатурой
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите действие:',
-            'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+            'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
         ]);
-    }
-
-
-    public function calculatePageCount($totalRecords, $recordsPerPage)
-    {
-        return ceil($totalRecords / $recordsPerPage) * 5;
     }
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram)
