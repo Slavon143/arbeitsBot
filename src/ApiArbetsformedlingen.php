@@ -16,29 +16,42 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
-    public function showAll($startIndex, $cityId) {
-        $filters = array();
+    public function showAll($startIndex, $cityId, $profession_id) {
+        $filters = [];
+
         if ($cityId !== null) {
-            $filters[] = array(
+            $filters[] = [
                 "type" => "municipality",
-                "value" => $cityId
-            );
+                "value" => "$cityId"
+            ];
         }
 
-        $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search', array(
+        if ($profession_id !== null) {
+            $filters[] = [
+                "type" => "occupationGroup",
+                "value" => "$profession_id"
+            ];
+        }
+
+        $requestData = [
             "filters" => $filters,
             "fromDate" => null,
             "order" => "relevance",
             "maxRecords" => 5,
             "startIndex" => $startIndex,
-            "toDate" => "2024-02-11T18:18:34.053Z",
+            "toDate" => "2024-02-12T16:18:18.032Z",
             "source" => "pb"
-        ));
+        ];
+
+        $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search', $requestData);
 
         $getAll = json_decode($getAll, true);
 
         return $getAll;
+
+        return $jsonRequestData;
     }
+
 
     public function getOne($id){
         $request = $this->makeApiRequest($this->platsbanken_api_url."job/$id");
@@ -46,6 +59,15 @@ class ApiArbetsformedlingen
         $request = json_decode($request,1);
 
         return $request;
+    }
+
+    public function getOccupation(){
+        $occupation = $this->makeApiRequest($_ENV['PLATS_URL_OCCUPAYION']);
+
+        if ($occupation){
+            $occupation = json_decode($occupation,true);
+            return $occupation;
+        }
     }
 
     public function getLocation(){
@@ -83,5 +105,5 @@ class ApiArbetsformedlingen
 
         curl_close($curl);
     }
-
 }
+

@@ -72,49 +72,41 @@ class ArbeitsTelegramBot
 
         switch (true) {
             case array_key_exists('platsbanken', $callbackData):
-                $menu->platsbankenMenu($chatId, $this->telegram);
+                $menu->showRegion($chatId, $this->telegram);
                 break;
-            case array_key_exists('platsbanken_show_all', $callbackData):
-                $menu->platsbankenShowAll($chatId, $this->telegram);
+            case array_key_exists('show_city', $callbackData):
+                $region_id = $callbackData['region_id'];
+                $menu->showCity($chatId, $this->telegram, $region_id);
                 break;
-            case array_key_exists('platsbanken_next', $callbackData):
-                $offset = $callbackData['page'];
-                $sityId = $callbackData['city_id'];
-                if ($offset === null) {
-                    $offset += 5;
-                }
-                $this->debug($callbackQuery);
-                $menu->platsbankenShowAll($chatId, $this->telegram, $offset,$sityId);
+            case array_key_exists('show_occupation', $callbackData):
+                $city_id = $callbackData['city_id'];
+                $menu->platsbankenShowOccupation($chatId, $this->telegram,$city_id);
                 break;
-            case array_key_exists('platsbanken_prev', $callbackData):
-                $offset = $callbackData['page'];
-                $sityId = $callbackData['city_id'];
-              if($offset >= 5){
-                  $offset -= 5;
-              }
-                $menu->platsbankenShowAll($chatId, $this->telegram, $offset,$sityId);
+            case array_key_exists('show_specialist', $callbackData):
+                $city_id = $callbackData['city_id'];
+                $occupation_id = $callbackData['show_specialist'];
+                $this->menu->platsbankenShowOccupationClass($chatId, $this->telegram,$occupation_id,$city_id);
                 break;
-            case array_key_exists('platsbanken_filter', $callbackData):
-                $menu->platsbankenFilter($chatId, $this->telegram);
+            case array_key_exists('show_profession', $callbackData):
+                $specialist_id = $callbackData['show_profession'];
+                $city_id = $callbackData['city_id'];
+                $this->menu->showResult($chatId, $this->telegram,$specialist_id,$city_id,$startIndex = null);
                 break;
             case array_key_exists('show_detail_page', $callbackData):
                 $detail_id = $callbackData['detail_id'];
-                $menu->showOne($chatId, $this->telegram, $detail_id);
+                $this->menu->showOne($chatId,$this->telegram,$detail_id);
                 break;
-            case array_key_exists('platsbanken_filter_ort', $callbackData):
-                $menu->showRegion($chatId, $this->telegram);
+            case array_key_exists('forward_page', $callbackData):
+                $sityId = $callbackData['ci'];
+                $specialist_id = $callbackData['spec'];
+                $page = $callbackData['forward_page'];
+                $this->menu->showResult($chatId, $this->telegram,$specialist_id,$sityId,$page);
                 break;
-            case array_key_exists('filter_region_id', $callbackData):
-                $region_id = $callbackData['filter_region_id'];
-                $menu->showCity($chatId, $this->telegram, $region_id);
-                break;
-            case array_key_exists('filter_city_id', $callbackData):
-                $filter_city_id = $callbackData['filter_city_id'];
-                $menu->showFilterChose($chatId, $this->telegram, $filter_city_id);
-                break;
-            case array_key_exists('show_all_filter_city', $callbackData):
-                $city_id = $callbackData['city_id'];
-                $menu->platsbankenShowAll($chatId, $this->telegram, null,$city_id);
+            case array_key_exists('back_page', $callbackData):
+                $sityId = $callbackData['ci'];
+                $specialist_id = $callbackData['spec'];
+                $page = $callbackData['back_page'];
+                $this->menu->showResult($chatId, $this->telegram,$specialist_id,$sityId,$page);
                 break;
             default:
                 break;

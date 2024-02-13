@@ -7,7 +7,6 @@ use src\ApiArbetsformedlingen;
 
 class ArbeitsBotMenu
 {
-
     public $apiArbeits;
 
 
@@ -20,30 +19,12 @@ class ArbeitsBotMenu
     {
         $objTelegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => 'Сделайте выбор:',
+            'text' => 'Сделайте выбор ресурсов:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => 'Platsbanken (Банк локаций)', 'callback_data' => json_encode(['platsbanken'=>''])],
+                        ['text' => 'Platsbanken (Банк локаций)', 'callback_data' => json_encode(['platsbanken' => ''])],
                         ['text' => 'Externa webbplatser (Внешние сайты)', 'callback_data' => 'webbplatser']
-                    ]
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true
-            ])
-        ]);
-    }
-
-    public function platsbankenMenu($chatId, $objTelegram)
-    {
-        $objTelegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Сделайте выбор:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'Показать все', 'callback_data' => json_encode(['platsbanken_show_all' =>''])],
-                        ['text' => 'Фильтр', 'callback_data' => json_encode(['platsbanken_filter' => ''])]
                     ]
                 ],
                 'resize_keyboard' => true,
@@ -54,10 +35,8 @@ class ArbeitsBotMenu
 
     public function showRegion($chatId, $telegram)
     {
-        // Получение данных для кнопок
         $getLocation = $this->apiArbeits->getLocation();
 
-// Создание массива кнопок
         $buttons = [];
 
         foreach ($getLocation as $item) {
@@ -65,10 +44,9 @@ class ArbeitsBotMenu
             $name = $item['name'];
             $buttons[] = [
                 ['text' => $name,
-                    'callback_data' => json_encode(['filter_region_id' => $id])]
+                    'callback_data' => json_encode(['show_city' => '', 'region_id' => $id])]
             ];
         }
-
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите ргион:',
@@ -78,19 +56,44 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function showCity($chatId,$telegram,$region_id){
-        $getLocation = $this->apiArbeits->getLocation();
-
+    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id)
+    {
+        $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
+        foreach ($occupation as $item) {
+            if ($item['id'] == $occupation_id) {
+                foreach ($item['items'] as $profession) {
+                    $id = $profession['id'];
+                    $name = $profession['name'];
+                    $buttons[] = [
+                        ['text' => $name,
+                            'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]
+                    ];
+                }
+            }
+        }
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите специальность:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => $buttons
+            ]),
+        ]);
 
-        foreach ($getLocation as $item){
-            if ($item['id'] == $region_id){
-                foreach ($item['items'] as $city){
+    }
+
+    public function showCity($chatId, $telegram, $region_id)
+    {
+        $getLocation = $this->apiArbeits->getLocation();
+        $buttons = [];
+        foreach ($getLocation as $item) {
+            if ($item['id'] == $region_id) {
+                foreach ($item['items'] as $city) {
                     $id = $city['id'];
                     $name = $city['name'];
                     $buttons[] = [
                         ['text' => $name,
-                            'callback_data' => json_encode(['filter_city_id' => $id])]
+                            'callback_data' => json_encode(['show_occupation' => '', 'city_id' => $id])]
                     ];
                 }
             }
@@ -102,122 +105,76 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
+    }
+
+    public function platsbankenShowOccupation($chatId, $telegram, $city_id)
+    {
+        $occupation = $this->apiArbeits->getOccupation();
+
+        $buttons = [];
+
+        foreach ($occupation as $item) {
+            $id = $item['id'];
+            $name = $item['name'];
+            $buttons[] = [
+                ['text' => $name,
+                    'callback_data' => json_encode(['show_specialist' => $id, 'city_id' => $city_id])]
+            ];
+        }
+
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите ргион:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => $buttons
+            ]),
+        ]);
 
     }
 
-    public function showFilterCity($chatId,$telegram,$minicipalyId){
-        $getCityResult = $this->apiArbeits->showFilterMunicipality($minicipalyId, $startIndex = null);
-        $this->buildMenuFromAds($getCityResult, $chatId, $telegram);
+    public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
+    {
+        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id);
+        $numberOfAds = $getAll['numberOfAds'];
 
-
-        // Создание массива для кнопок "Далее" и "Назад"
-        $buttons = [
-            [
-                ['text' => '', 'callback_data' => 'platsbanken_filter_ort'],
-                ['text' => '', 'callback_data' => 'platsbanken_filter_yrke']
-            ]
-        ];
-
-        // Если startIndex больше 0, добавляем кнопку "Назад"
-        if ($startIndex > 0) {
-            $buttons[0][0]['text'] = '⬅️ Назад';
-            $buttons[0][0]['callback_data'] = "platsbanken_prev_$startIndex";
-        }
-
-        // Если startIndex + 5 меньше либо равно offsetLimit, добавляем кнопку "Далее"
-        if ($startIndex + 5 <= $getCityResult['offsetLimit']) {
-            $buttons[0][1]['text'] = 'Далее ➡️';
-            $buttons[0][1]['callback_data'] = "platsbanken_next_$startIndex";
-        }
-
-        // Отправка сообщения с кнопками "Далее" и "Назад"
-        if (!empty($buttons)) {
+        if ($numberOfAds == 0) {
             $telegram->sendMessage([
                 'chat_id' => $chatId,
-                'text' => 'Выберите действие:',
-                'reply_markup' => json_encode([
-                    'inline_keyboard' => $buttons,
-                ]),
+                'text' => 'К сожалению, объявлений не найдено.'
             ]);
+            return;
         }
 
+        $this->buildMenuFromAds($getAll, $chatId, $telegram);
 
-        file_put_contents(__DIR__ . '/rrr.txt',var_export($getCityResult,1));
-    }
+        $inlineKeyboard = [];
 
-    public function showFilterChose($chatId,$telegram,$filter_city_id){
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Сделайте выбор:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'Показать результат', 'callback_data' => json_encode(['show_all_filter_city' => '', 'city_id' => $filter_city_id])],
-                        ['text' => 'Выбрать профессию (Yrke)', 'callback_data' => 'platsbanken_filter_yrke_' . $filter_city_id]
-                    ]
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true
-            ])
-        ]);
-    }
+        // Добавляем информацию о текущей странице и общем количестве объявлений
+        $currentPage = $startIndex / 5 + 1; // Рассчитываем номер текущей страницы
+        $totalPages = ceil($numberOfAds / 5); // Рассчитываем общее количество страниц
 
-    public function platsbankenFilter($chatId,$telegram){
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Сделайте выбор:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'Ort (Место)', 'callback_data' => json_encode(['platsbanken_filter_ort'=>''])],
-                        ['text' => 'Yrke (Профессия)', 'callback_data' => 'platsbanken_filter_yrke']
-                    ]
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true
-            ])
-        ]);
-    }
-
-    public function platsbankenShowAll($chatId, $objTelegram, $startIndex = null,$city = null)
-    {
-        $getAll = $this->apiArbeits->showAll($startIndex,$city);
-
-
-        // Построение меню из объявлений
-        $this->buildMenuFromAds($getAll, $chatId, $objTelegram);
-
-        // Создание массива для кнопок "Далее" и "Назад"
-        $buttons = [
-            [
-                ['text' => '', 'callback_data' => 'platsbanken_filter_ort'],
-                ['text' => '', 'callback_data' => 'platsbanken_filter_yrke']
-            ]
-        ];
-
-        // Если startIndex больше 0, добавляем кнопку "Назад"
+        // Добавляем кнопку "Назад"
         if ($startIndex > 0) {
-            $buttons[0][0]['text'] = '⬅️ Назад';
-            $buttons[0][0]['callback_data'] = json_encode(['platsbanken_prev'=>'','page'=>$startIndex -5,'city_id' => $city]);
+            $inlineKeyboard[] = [['text' => '<< Назад (' . $currentPage . '/' . $totalPages . ')', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])]];
         }
 
-        // Если startIndex + 5 меньше либо равно offsetLimit, добавляем кнопку "Далее"
-        if ($startIndex + 5 <= $getAll['offsetLimit']) {
-            file_put_contents(__DIR__ .'/rrr.txt',var_export($city,1));
-            $buttons[0][1]['text'] = 'Далее ➡️';
-            $buttons[0][1]['callback_data'] = json_encode(['platsbanken_next'=>'','page'=>$startIndex +5,'city_id' => $city]);
+        // Добавляем кнопку "Вперед"
+        $endIndex = $this->calculatePageCount($numberOfAds, 5);
+        if ($endIndex > $startIndex && $numberOfAds > $startIndex + 5) {
+            $inlineKeyboard[] = [['text' => 'Вперед >> (' . $currentPage . '/' . $totalPages . ')', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])]];
         }
 
-        // Отправка сообщения с кнопками "Далее" и "Назад"
-        if (!empty($buttons)) {
-            $objTelegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => 'Выберите действие:',
-                'reply_markup' => json_encode([
-                    'inline_keyboard' => $buttons,
-                ]),
-            ]);
-        }
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите действие:',
+            'reply_markup' => json_encode(['inline_keyboard' => $inlineKeyboard])
+        ]);
+    }
+
+
+    public function calculatePageCount($totalRecords, $recordsPerPage)
+    {
+        return ceil($totalRecords / $recordsPerPage) * 5;
     }
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram)
@@ -247,7 +204,7 @@ class ArbeitsBotMenu
             $menu = [
                 [
                     'text' => '⏬ Подробнее',
-                    'callback_data' => json_encode(['show_detail_page' => '','detail_id' =>$ad['id']]),
+                    'callback_data' => json_encode(['show_detail_page' => '', 'detail_id' => $ad['id']]),
                 ]
             ];
 
@@ -270,10 +227,19 @@ class ArbeitsBotMenu
         }
     }
 
+    public function truncateText($text, $length = 2000)
+    {
+        // Обрезаем текст до заданной длины
+        $truncatedText = mb_substr($text, 0, $length);
+        // Удаляем последнее слово, чтобы избежать обрыва слова
+        $truncatedText = preg_replace('/\s+?(\S+)?$/', '', $truncatedText);
+        return $truncatedText;
+    }
+
     public function showOne($chatId, $telegram, $key_board)
     {
-
         $ad = $this->apiArbeits->getOne($key_board);
+
         $title = isset($ad['title']) && !empty($ad['title']) ? strip_tags($ad['title']) : '';
         $description = isset($ad['description']) && !empty($ad['description']) ? strip_tags($ad['description']) : '';
         $publishedDate = isset($ad['publishedDate']) && !empty($ad['publishedDate']) ? strip_tags($ad['publishedDate']) : '';
@@ -286,9 +252,19 @@ class ArbeitsBotMenu
         $region = isset($ad['workplace']['region']) && !empty($ad['workplace']['region']) ? strip_tags($ad['workplace']['region']) : '';
         $municipality = isset($ad['workplace']['municipality']) && !empty($ad['workplace']['municipality']) ? strip_tags($ad['workplace']['municipality']) : '';
 
+        // Информация о контакте
+        $contactsInfo = isset($ad['contacts'][0]) ? $ad['contacts'][0] : [];
+        $contactName = isset($contactsInfo['description']) ? strip_tags($contactsInfo['description']) : '';
+        $contactEmail = isset($contactsInfo['email']) ? strip_tags($contactsInfo['email']) : '';
+        $contactPhoneNumber = isset($contactsInfo['phoneNumber']) ? strip_tags($contactsInfo['phoneNumber']) : '';
+
+        // Информация о заявке
+        $applicationInfo = isset($ad['application']) ? $ad['application'] : [];
+        $webAddressApplication = isset($applicationInfo['webAddress']) ? $applicationInfo['webAddress'] : '';
+
         $additionalInfo =
             (!empty($occupation) ? "<b>Профессия:</b> " . $occupation . "\n" : '') .
-            (!empty($description) ? "<b>Описание:</b> " . $description . "\n" : '') .
+            (!empty($description) ? "<b>Описание:</b> " . $this->truncateText($description) . "\n" : '') .
             (!empty($companyName) ? "<b>Название компании:</b> " . $companyName . "\n" : '') .
             (!empty($webAddress) ? "<b>Веб-адрес компании:</b> " . $webAddress . "\n" : '') .
             (!empty($phoneNumber) ? "<b>Телефон компании:</b> " . $phoneNumber . "\n" : '') .
@@ -296,7 +272,11 @@ class ArbeitsBotMenu
             (!empty($organisationNumber) ? "<b>Организационный номер компании:</b> " . $organisationNumber . "\n" : '') .
             (!empty($region) ? "<b>Регион:</b> " . $region . "\n" : '') .
             (!empty($municipality) ? "<b>Муниципалитет:</b> " . $municipality . "\n" : '') .
-            (!empty($publishedDate) ? "<b>Дата публикации:</b> " . $publishedDate . "\n" : '');
+            (!empty($publishedDate) ? "<b>Дата публикации:</b> " . $publishedDate . "\n" : '') .
+            (!empty($contactName) ? "<b>Контактное лицо:</b> " . $contactName . "\n" : '') .
+            (!empty($contactEmail) ? "<b>Email контактного лица:</b> " . $contactEmail . "\n" : '') .
+            (!empty($contactPhoneNumber) ? "<b>Телефон контактного лица:</b> " . $contactPhoneNumber . "\n" : '') .
+            (!empty($webAddressApplication) ? "<b>Ссылка на заявку:</b> " . $webAddressApplication . "\n" : '');
 
         // Отправляем сообщение с основной информацией о каждом объявлении
         $telegram->sendMessage([
@@ -306,4 +286,8 @@ class ArbeitsBotMenu
         ]);
     }
 
+    public function debug($data)
+    {
+        file_put_contents(__DIR__ . '/classDebug.txt', var_export($data, 1));
+    }
 }
