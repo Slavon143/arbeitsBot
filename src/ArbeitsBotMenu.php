@@ -39,39 +39,77 @@ class ArbeitsBotMenu
 
         $buttons = [];
 
+        // Разбиваем кнопки на две колонки
+        $columns = 2;
+        $current_column = 0;
+        $current_row = [];
+
         foreach ($getLocation as $item) {
             $id = $item['id'];
             $name = $item['name'];
-            $buttons[] = [
-                ['text' => $name,
-                    'callback_data' => json_encode(['show_city' => '', 'region_id' => $id])]
-            ];
+
+            // Добавляем кнопку в текущую строку
+            $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_city' => '', 'region_id' => $id])];
+
+            // Если текущая строка достигла максимальной ширины, добавляем ее в массив кнопок и создаем новую строку
+            $current_column++;
+            if ($current_column >= $columns) {
+                $buttons[] = $current_row;
+                $current_row = [];
+                $current_column = 0;
+            }
         }
+
+        // Если осталась неполная строка, добавляем ее в массив кнопок
+        if (!empty($current_row)) {
+            $buttons[] = $current_row;
+        }
+
         $telegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => 'Выберите ргион:',
+            'text' => 'Выберите регион:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
         ]);
     }
 
+
     public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id)
     {
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
+
+        // Разбиваем кнопки на два ряда
+        $columns = 2;
+        $current_column = 0;
+        $current_row = [];
+
         foreach ($occupation as $item) {
             if ($item['id'] == $occupation_id) {
                 foreach ($item['items'] as $profession) {
                     $id = $profession['id'];
                     $name = $profession['name'];
-                    $buttons[] = [
-                        ['text' => $name,
-                            'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]
-                    ];
+
+                    // Добавляем кнопку в текущий ряд
+                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
+
+                    // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
+                    $current_column++;
+                    if ($current_column >= $columns) {
+                        $buttons[] = $current_row;
+                        $current_row = [];
+                        $current_column = 0;
+                    }
                 }
             }
         }
+
+        // Если остался неполный ряд, добавляем его в массив кнопок
+        if (!empty($current_row)) {
+            $buttons[] = $current_row;
+        }
+
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите специальность:',
@@ -79,25 +117,44 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
     }
+
 
     public function showCity($chatId, $telegram, $region_id)
     {
         $getLocation = $this->apiArbeits->getLocation();
         $buttons = [];
+
+        // Разбиваем кнопки на два ряда
+        $columns = 2;
+        $current_column = 0;
+        $current_row = [];
+
         foreach ($getLocation as $item) {
             if ($item['id'] == $region_id) {
                 foreach ($item['items'] as $city) {
                     $id = $city['id'];
                     $name = $city['name'];
-                    $buttons[] = [
-                        ['text' => $name,
-                            'callback_data' => json_encode(['show_occupation' => '', 'city_id' => $id])]
-                    ];
+
+                    // Добавляем кнопку в текущий ряд
+                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_occupation' => '', 'city_id' => $id])];
+
+                    // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
+                    $current_column++;
+                    if ($current_column >= $columns) {
+                        $buttons[] = $current_row;
+                        $current_row = [];
+                        $current_column = 0;
+                    }
                 }
             }
         }
+
+        // Если остался неполный ряд, добавляем его в массив кнопок
+        if (!empty($current_row)) {
+            $buttons[] = $current_row;
+        }
+
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите город:',
@@ -107,30 +164,47 @@ class ArbeitsBotMenu
         ]);
     }
 
+
     public function platsbankenShowOccupation($chatId, $telegram, $city_id)
     {
         $occupation = $this->apiArbeits->getOccupation();
-
         $buttons = [];
+
+        // Разбиваем кнопки на два ряда
+        $columns = 2;
+        $current_column = 0;
+        $current_row = [];
 
         foreach ($occupation as $item) {
             $id = $item['id'];
             $name = $item['name'];
-            $buttons[] = [
-                ['text' => $name,
-                    'callback_data' => json_encode(['show_specialist' => $id, 'city_id' => $city_id])]
-            ];
+
+            // Добавляем кнопку в текущий ряд
+            $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_specialist' => $id, 'city_id' => $city_id])];
+
+            // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
+            $current_column++;
+            if ($current_column >= $columns) {
+                $buttons[] = $current_row;
+                $current_row = [];
+                $current_column = 0;
+            }
+        }
+
+        // Если остался неполный ряд, добавляем его в массив кнопок
+        if (!empty($current_row)) {
+            $buttons[] = $current_row;
         }
 
         $telegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => 'Выберите ргион:',
+            'text' => 'Выберите направление:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
     }
+
 
     public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
     {
