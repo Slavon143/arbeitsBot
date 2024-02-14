@@ -70,7 +70,6 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
     }
 
     public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null) {
@@ -112,7 +111,19 @@ class ArbeitsBotMenu
                         'inline_keyboard' => $buttons
                     ]),
                 ]);
+                $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => 'Вернуться назад:',
+                    'reply_markup' => json_encode([
+                        'inline_keyboard' => [
+                            [
+                                ['text' => 'Назад', 'callback_data' => json_encode(['back'=>'back'])]
+                            ]
+                        ]
+                    ]),
+                ]);
             }
+//            $this->buttonBack($chatId,$telegram);
         }
     }
 
@@ -171,6 +182,8 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
+
+        $this->buttonBack($chatId,$telegram);
     }
 
 
@@ -216,6 +229,7 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
+        $this->buttonBack($chatId,$telegram);
     }
 
 
@@ -269,9 +283,23 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
+
+        $this->buttonBack($chatId,$telegram);
     }
 
-
+    public function buttonBack($ctahId,$telegram){
+        $telegram->sendMessage([
+            'chat_id' => $ctahId,
+            'text' => 'Вернуться назад:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'Назад', 'callback_data' => json_encode(['back'=>'back'])]
+                    ]
+                ]
+            ]),
+        ]);
+    }
 
     public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
     {
@@ -288,37 +316,45 @@ class ArbeitsBotMenu
 
         $this->buildMenuFromAds($getAll, $chatId, $telegram);
 
-        $inlineKeyboard = [];
+        // Рассчитываем общее количество страниц
+        $totalPages = ceil($numberOfAds / 5);
 
-        // Добавляем информацию о текущей странице и общем количестве объявлений
-        $currentPage = $startIndex / 5 + 1; // Рассчитываем номер текущей страницы
-        $totalPages = ceil($numberOfAds / 5); // Рассчитываем общее количество страниц
+        // Если всего одна страница, не добавляем кнопки навигации вперед/назад
+        if ($totalPages == 1) {
+            $inlineKeyboard = [];
+        } else {
+            // Создаем кнопки
+            $inlineKeyboard = [];
 
-        // Создаем кнопки
-        $left_button = ['text' => '←', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])];
-        $right_button = ['text' => '→', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])];
+            $left_button = ['text' => '←', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])];
+            $right_button = ['text' => '→', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])];
 
-        // Проверяем, нужно ли показывать кнопку "Назад"
-        if ($startIndex > 0) {
-            $inlineKeyboard[] = $left_button;
+            // Проверяем, нужно ли показывать кнопку "Назад"
+            if ($startIndex > 0) {
+                $inlineKeyboard[] = $left_button;
+            }
+
+            // Добавляем кнопку со страницами
+            $currentPage = $startIndex / 5 + 1; // Рассчитываем номер текущей страницы
+            $page_button = ['text' => $currentPage . '/' . $totalPages, 'callback_data' => 'None'];
+            $inlineKeyboard[] = $page_button;
+
+            // Проверяем, нужно ли показывать кнопку "Вперед"
+            if ($startIndex + 5 < $numberOfAds) {
+                $inlineKeyboard[] = $right_button;
+            }
+            // Отправляем сообщение с клавиатурой
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Выберите действие:',
+                'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
+            ]);
         }
 
-        // Добавляем кнопку со страницами
-        $page_button = ['text' => $currentPage . '/' . $totalPages, 'callback_data' => 'None'];
-        $inlineKeyboard[] = $page_button;
 
-        // Проверяем, нужно ли показывать кнопку "Вперед"
-        if ($startIndex + 5 < $numberOfAds) {
-            $inlineKeyboard[] = $right_button;
-        }
-
-        // Отправляем сообщение с клавиатурой
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Выберите действие:',
-            'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
-        ]);
+        $this->buttonBack($chatId,$telegram);
     }
+
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram)
     {
@@ -386,8 +422,8 @@ class ArbeitsBotMenu
                 'text' => strip_tags($translate),
                 'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
             ]);
+            $this->buttonBack($chatId,$telegram);
         }
-
     }
 
     public function showOne($chatId, $telegram, $key_board)
@@ -418,6 +454,6 @@ class ArbeitsBotMenu
                 ]
             ]),
         ]);
+        $this->buttonBack($chatId,$telegram);
     }
-
 }
