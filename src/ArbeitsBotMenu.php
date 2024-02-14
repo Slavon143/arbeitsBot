@@ -73,8 +73,6 @@ class ArbeitsBotMenu
 
     }
 
-
-
     public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null) {
         if ($translate) {
             $translate = new TranslateApi();
@@ -85,13 +83,25 @@ class ArbeitsBotMenu
 
             if ($occupationTranslate) {
                 $buttons = [];
+                $row = [];
+                $columns = 2; // Количество колонок
 
                 foreach ($occupationTranslate as $item) {
                     $id = $item['id'];
                     $name = $item['name'];
 
-                    // Добавляем кнопку в массив кнопок
-                    $buttons[] = [['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]];
+                    // Добавляем кнопку в текущий ряд
+                    $row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
+
+                    // Если текущий ряд заполнен, добавляем его в массив кнопок и создаем новый ряд
+                    if (count($row) >= $columns) {
+                        $buttons[] = $row;
+                        $row = [];
+                    }
+                }
+                // Если остались кнопки в текущем ряду, добавляем его в массив кнопок
+                if (!empty($row)) {
+                    $buttons[] = $row;
                 }
 
                 // Отправляем сообщение с кнопками
@@ -102,13 +112,12 @@ class ArbeitsBotMenu
                         'inline_keyboard' => $buttons
                     ]),
                 ]);
-
             }
         }
     }
 
 
-    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id,$translate = null)
+    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id, $translate = null)
     {
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
@@ -147,23 +156,19 @@ class ArbeitsBotMenu
             $buttons[] = $current_row;
         }
 
+        // Добавляем кнопку "Перевести" в массив кнопок
+        $ukrainian_flag_unicode = "🇺🇦";
+        $buttons[] = [[
+            'text' => $ukrainian_flag_unicode . ' Перевести:',
+            'callback_data' => json_encode(['translate_specialist' => $occupation_id, 'city_id' => $city_id])
+        ]];
+
+        // Отправляем сообщение с кнопками
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите специальность:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
-            ]),
-        ]);
-        $ukrainian_flag_unicode = "🇺🇦";
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate_specialist' => $occupation_id,'city_id'=>$city_id])]
-                    ]
-                ]
             ]),
         ]);
     }
@@ -214,12 +219,12 @@ class ArbeitsBotMenu
     }
 
 
-    public function platsbankenShowOccupation($chatId, $telegram, $city_id,$translate = null)
+    public function platsbankenShowOccupation($chatId, $telegram, $city_id, $translate = null)
     {
         $occupation = $this->apiArbeits->getOccupation();
-        if ($translate){
+        if ($translate) {
             $translateApi = new TranslateApi();
-            $occupation = Helper::occupationDataTranslate($occupation,$translateApi);
+            $occupation = Helper::occupationDataTranslate($occupation, $translateApi);
         }
         $buttons = [];
 
@@ -249,6 +254,14 @@ class ArbeitsBotMenu
             $buttons[] = $current_row;
         }
 
+        // Добавляем кнопку "Перевести" в массив кнопок
+        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+        $buttons[] = [[
+            'text' => $ukrainian_flag_unicode . ' Перевести:',
+            'callback_data' => json_encode(['translate_occupation' => $city_id])
+        ]];
+
+        // Отправляем сообщение с кнопками
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите направление:',
@@ -256,21 +269,8 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
-        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
-
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate_occupation' => $city_id])]
-                    ]
-                ]
-            ]),
-        ]);
     }
+
 
 
     public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
