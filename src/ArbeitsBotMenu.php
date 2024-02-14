@@ -74,7 +74,41 @@ class ArbeitsBotMenu
     }
 
 
-    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id)
+
+    public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null) {
+        if ($translate) {
+            $translate = new TranslateApi();
+
+            $occupation = $this->apiArbeits->getOccupation();
+
+            $occupationTranslate = Helper::specialistDataTranslate($occupation, $occupation_id, $translate);
+
+            if ($occupationTranslate) {
+                $buttons = [];
+
+                foreach ($occupationTranslate as $item) {
+                    $id = $item['id'];
+                    $name = $item['name'];
+
+                    // Добавляем кнопку в массив кнопок
+                    $buttons[] = [['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])]];
+                }
+
+                // Отправляем сообщение с кнопками
+                $telegram->sendMessage([
+                    'chat_id' => $chatId,
+                    'text' => 'Выберите направление:',
+                    'reply_markup' => json_encode([
+                        'inline_keyboard' => $buttons
+                    ]),
+                ]);
+
+            }
+        }
+    }
+
+
+    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id,$translate = null)
     {
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
@@ -118,6 +152,18 @@ class ArbeitsBotMenu
             'text' => 'Выберите специальность:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
+            ]),
+        ]);
+        $ukrainian_flag_unicode = "🇺🇦";
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => $ukrainian_flag_unicode . ' Перевести:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate_specialist' => $occupation_id,'city_id'=>$city_id])]
+                    ]
+                ]
             ]),
         ]);
     }

@@ -71,7 +71,6 @@ class ArbeitsTelegramBot
         }
 
         switch (true) {
-
             case array_key_exists('translate', $callbackData):
                 $translate_id = $callbackData['translate'];
                 $this->menu->showOneTranslate($chatId, $this->telegram, $translate_id);
@@ -88,13 +87,18 @@ class ArbeitsTelegramBot
                 $menu->platsbankenShowOccupation($chatId, $this->telegram,$city_id);
                 break;
             case array_key_exists('translate_occupation', $callbackData):
-                $city_id = $callbackData['city_id'];
+                $city_id = $callbackData['translate_occupation'];
                 $menu->platsbankenShowOccupation($chatId, $this->telegram,$city_id,true);
                 break;
             case array_key_exists('show_specialist', $callbackData):
                 $city_id = $callbackData['city_id'];
                 $occupation_id = $callbackData['show_specialist'];
                 $this->menu->platsbankenShowOccupationClass($chatId, $this->telegram,$occupation_id,$city_id);
+                break;
+            case array_key_exists('translate_specialist', $callbackData):
+                $occupation_id = $callbackData['translate_specialist'];
+                $city_id = $callbackData['city_id'];
+                $this->menu->platsbankenShowTranslateSpecialist($chatId, $this->telegram,$occupation_id,$city_id,true);
                 break;
             case array_key_exists('show_profession', $callbackData):
                 $specialist_id = $callbackData['show_profession'];

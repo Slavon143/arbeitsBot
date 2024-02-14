@@ -38,7 +38,8 @@ class Helper
         return $result;
     }
 
-    public static function processJobData($ad, $newArray) {
+    public static function processJobData($ad, $newArray)
+    {
         $flattenedArray = Helper::flattenArray($ad);
         $flattenedArray['description'] = Helper::truncateText(strip_tags(str_ireplace("\n", '', $flattenedArray['description'])));
         $rename = Helper::renameKeys($flattenedArray, $newArray);
@@ -49,12 +50,50 @@ class Helper
         }
         return $str;
     }
+
     public static function debug($data)
     {
         file_put_contents(__DIR__ . '/classDebug.txt', var_export($data, 1));
     }
 
-    public static function occupationDataTranslate($array, $trans) {
+
+    public static function specialistDataTranslate($arr, $occupation_id, $translete)
+    {
+        if (!empty($arr)) {
+            $str = '';
+            foreach ($arr as $value) {
+                if ($value['id'] == $occupation_id) {
+                    foreach ($value['items'] as $item) {
+                        if (isset($item['name'], $item['id'])) {
+                            $str .= $item['name'] . '>>>' . $item['id'] . '???';
+                        }
+                    }
+                }
+            }
+
+            $strTranslate = $translete->translate($str);
+            $strTranslate = strip_tags($strTranslate);
+            if ($strTranslate) {
+                $data = [];
+                $transleteData = explode("???", $strTranslate);
+
+                foreach ($transleteData as $item) {
+                    $item = explode(">>>", $item);
+                    if (isset($item[0], $item[1])) {
+                        $data[] = [
+                            'name' => $item[0],
+                            'id' => $item[1]
+                        ];
+                    }
+                }
+                return $data;
+            }
+        }
+    }
+
+
+    public static function occupationDataTranslate($array, $translete)
+    {
         // Проверяем наличие элементов в массиве
         if (empty($array)) {
             return [];
@@ -69,7 +108,7 @@ class Helper
         }
 
         // Переводим строку
-        $transStr = $trans->translate($str);
+        $transStr = $translete->translate($str);
         $transStr = explode(">>>", $transStr);
 
         $res = [];
