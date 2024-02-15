@@ -59,36 +59,32 @@ class Helper
 
     public static function specialistDataTranslate($arr, $occupation_id, $translete)
     {
-        if (!empty($arr)) {
-            $str = '';
-            foreach ($arr as $value) {
-                if ($value['id'] == $occupation_id) {
-                    foreach ($value['items'] as $item) {
-                        if (isset($item['name'], $item['id'])) {
-                            $str .= $item['name'] . '>>>' . $item['id'] . '???';
-                        }
-                    }
-                }
-            }
 
-            $strTranslate = $translete->translate($str);
-            $strTranslate = strip_tags($strTranslate);
-            if ($strTranslate) {
-                $data = [];
-                $transleteData = explode("???", $strTranslate);
-
-                foreach ($transleteData as $item) {
-                    $item = explode(">>>", $item);
-                    if (isset($item[0], $item[1])) {
-                        $data[] = [
-                            'name' => $item[0],
-                            'id' => $item[1]
-                        ];
-                    }
+        $str = '';
+        foreach ($arr as $value) {
+            if ($value['id'] === $occupation_id) {
+                foreach ($value['items'] as $item) {
+                    $str .= $item['name'] . '////' . $item['id'] . "\r\n";
                 }
-                return $data;
             }
         }
+
+        $strTranslate = $translete->translate($str);
+        $arrTranslate = explode("\r\n", $strTranslate);
+        $arr = [];
+        foreach ($arrTranslate as $value) {
+            $value = strip_tags($value);
+            $value = explode("////", $value);
+            if (isset($value[0]) && isset($value[1])) {
+                $arr[] = [
+                    'name' => $value[0],
+                    'id' => $value[1]
+                ];
+            }
+
+        }
+        return $arr;
+
     }
 
 
@@ -103,18 +99,19 @@ class Helper
         foreach ($array as $key => $value) {
             // Проверяем наличие ожидаемых ключей в массиве
             if (isset($value['name'], $value['id'])) {
-                $str .= $value['name'] . '&&' . $value['id'] . ">>>";
+                $str .= $value['name'] . '////' . $value['id'] . "\r\n";
             }
         }
 
         // Переводим строку
         $transStr = $translete->translate($str);
-        $transStr = explode(">>>", $transStr);
+        $transStr = explode("\r\n", $transStr);
 
         $res = [];
         foreach ($transStr as $value) {
+            $value = strip_tags($value);
             // Разбиваем строку на части по символу '&&'
-            $parts = explode("&&", $value);
+            $parts = explode("////", $value);
 
             // Проверяем, что массив содержит обе части (name и id)
             if (isset($parts[0], $parts[1])) {

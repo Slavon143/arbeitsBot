@@ -72,59 +72,56 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null) {
-        if ($translate) {
-            $translate = new TranslateApi();
+    public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null)
+    {
+        $occupation = $this->apiArbeits->getOccupation();
 
-            $occupation = $this->apiArbeits->getOccupation();
+        $occupationTranslate = Helper::specialistDataTranslate($occupation, $occupation_id, $this->apiTranslate);
 
-            $occupationTranslate = Helper::specialistDataTranslate($occupation, $occupation_id, $translate);
+        if ($occupationTranslate) {
+            $buttons = [];
+            $row = [];
+            $columns = 2; // Количество колонок
 
-            if ($occupationTranslate) {
-                $buttons = [];
-                $row = [];
-                $columns = 2; // Количество колонок
+            foreach ($occupationTranslate as $item) {
+                $id = $item['id'];
+                $name = $item['name'];
 
-                foreach ($occupationTranslate as $item) {
-                    $id = $item['id'];
-                    $name = $item['name'];
+                // Добавляем кнопку в текущий ряд
+                $row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
 
-                    // Добавляем кнопку в текущий ряд
-                    $row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
-
-                    // Если текущий ряд заполнен, добавляем его в массив кнопок и создаем новый ряд
-                    if (count($row) >= $columns) {
-                        $buttons[] = $row;
-                        $row = [];
-                    }
-                }
-                // Если остались кнопки в текущем ряду, добавляем его в массив кнопок
-                if (!empty($row)) {
+                // Если текущий ряд заполнен, добавляем его в массив кнопок и создаем новый ряд
+                if (count($row) >= $columns) {
                     $buttons[] = $row;
+                    $row = [];
                 }
-
-                // Отправляем сообщение с кнопками
-                $telegram->sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => 'Выберите направление:',
-                    'reply_markup' => json_encode([
-                        'inline_keyboard' => $buttons
-                    ]),
-                ]);
-                $telegram->sendMessage([
-                    'chat_id' => $chatId,
-                    'text' => 'Вернуться назад:',
-                    'reply_markup' => json_encode([
-                        'inline_keyboard' => [
-                            [
-                                ['text' => 'Назад', 'callback_data' => json_encode(['back'=>'back'])]
-                            ]
-                        ]
-                    ]),
-                ]);
             }
-//            $this->buttonBack($chatId,$telegram);
+            // Если остались кнопки в текущем ряду, добавляем его в массив кнопок
+            if (!empty($row)) {
+                $buttons[] = $row;
+            }
+
+            // Отправляем сообщение с кнопками
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => 'Выберите направление:',
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => $buttons
+                ]),
+            ]);
+
         }
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Вернуться назад:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => 'Назад', 'callback_data' => json_encode(['back' => 'back'])]
+                    ]
+                ]
+            ]),
+        ]);
     }
 
 
@@ -183,7 +180,7 @@ class ArbeitsBotMenu
             ]),
         ]);
 
-        $this->buttonBack($chatId,$telegram);
+        $this->buttonBack($chatId, $telegram);
     }
 
 
@@ -229,7 +226,7 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-        $this->buttonBack($chatId,$telegram);
+        $this->buttonBack($chatId, $telegram);
     }
 
 
@@ -267,13 +264,14 @@ class ArbeitsBotMenu
         if (!empty($current_row)) {
             $buttons[] = $current_row;
         }
-
-        // Добавляем кнопку "Перевести" в массив кнопок
-        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
-        $buttons[] = [[
-            'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'callback_data' => json_encode(['translate_occupation' => $city_id])
-        ]];
+        if (!$translate) {
+            // Добавляем кнопку "Перевести" в массив кнопок
+            $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+            $buttons[] = [[
+                'text' => $ukrainian_flag_unicode . ' Перевести:',
+                'callback_data' => json_encode(['translate_occupation' => $city_id])
+            ]];
+        }
 
         // Отправляем сообщение с кнопками
         $telegram->sendMessage([
@@ -284,17 +282,18 @@ class ArbeitsBotMenu
             ]),
         ]);
 
-        $this->buttonBack($chatId,$telegram);
+        $this->buttonBack($chatId, $telegram);
     }
 
-    public function buttonBack($ctahId,$telegram){
+    public function buttonBack($ctahId, $telegram)
+    {
         $telegram->sendMessage([
             'chat_id' => $ctahId,
             'text' => 'Вернуться назад:',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => 'Назад', 'callback_data' => json_encode(['back'=>'back'])]
+                        ['text' => 'Назад', 'callback_data' => json_encode(['back' => 'back'])]
                     ]
                 ]
             ]),
@@ -352,7 +351,7 @@ class ArbeitsBotMenu
         }
 
 
-        $this->buttonBack($chatId,$telegram);
+        $this->buttonBack($chatId, $telegram);
     }
 
 
@@ -406,23 +405,24 @@ class ArbeitsBotMenu
         }
     }
 
-    public function showOneTranslate($chatId, $telegram, $key_board){
+    public function showOneTranslate($chatId, $telegram, $key_board)
+    {
         $ad = $this->apiArbeits->getOne($key_board);
 
         //newArray
         require __DIR__ . '/../settings/ArraySettings.php';
 
-        $translate = Helper::processJobData($ad,$newArray);
+        $translate = Helper::processJobData($ad, $newArray);
 
         $translate = $this->apiTranslate->translate($translate);
 
-        if (!empty($translate)){
+        if (!empty($translate)) {
             $telegram->sendMessage([
                 'chat_id' => $chatId,
                 'text' => strip_tags($translate),
                 'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
             ]);
-            $this->buttonBack($chatId,$telegram);
+            $this->buttonBack($chatId, $telegram);
         }
     }
 
@@ -433,7 +433,7 @@ class ArbeitsBotMenu
         //newArray
         require __DIR__ . '/../settings/ArraySettings.php';
 
-        $str = Helper::processJobData($ad,$newArrayUa);
+        $str = Helper::processJobData($ad, $newArrayUa);
 
         $telegram->sendMessage([
             'chat_id' => $chatId,
@@ -454,6 +454,6 @@ class ArbeitsBotMenu
                 ]
             ]),
         ]);
-        $this->buttonBack($chatId,$telegram);
+        $this->buttonBack($chatId, $telegram);
     }
 }

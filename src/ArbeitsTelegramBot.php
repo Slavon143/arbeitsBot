@@ -69,7 +69,7 @@ class ArbeitsTelegramBot
         switch (true) {
             case array_key_exists('translate', $callbackData):
                 $translate_id = $callbackData['translate'];
-                $actionHandler->addToHistory($chatId, ['type' => 'showOneTranslate', 'translate_id' => $translate_id]);
+                $actionHandler->addToHistory($chatId, ['type' => 'translate', 'translate_id' => $translate_id]);
                 $this->menu->showOneTranslate($chatId, $this->telegram, $translate_id);
                 break;
             case array_key_exists('platsbanken', $callbackData):
@@ -118,14 +118,14 @@ class ArbeitsTelegramBot
                 $cityId = $callbackData['ci'];
                 $specialist_id = $callbackData['spec'];
                 $page = $callbackData['forward_page'];
-                $actionHandler->addToHistory($chatId, ['type' => 'forwardPage', 'city_id' => $cityId, 'specialist_id' => $specialist_id, 'page' => $page]);
+                $actionHandler->addToHistory($chatId, ['type' => 'forward_page', 'city_id' => $cityId, 'specialist_id' => $specialist_id, 'page' => $page]);
                 $this->menu->showResult($chatId, $this->telegram, $specialist_id, $cityId, $page);
                 break;
             case array_key_exists('back_page', $callbackData):
                 $cityId = $callbackData['ci'];
                 $specialist_id = $callbackData['spec'];
                 $page = $callbackData['back_page'];
-                $actionHandler->addToHistory($chatId, ['type' => 'backPage', 'city_id' => $cityId, 'specialist_id' => $specialist_id, 'page' => $page]);
+                $actionHandler->addToHistory($chatId, ['type' => 'back_page', 'city_id' => $cityId, 'specialist_id' => $specialist_id, 'page' => $page]);
                 $this->menu->showResult($chatId, $this->telegram, $specialist_id, $cityId, $page);
                 break;
             default:
@@ -136,7 +136,7 @@ class ArbeitsTelegramBot
 
             if ($previousAction) {
                 switch ($previousAction['type']) {
-                    case 'showOneTranslate':
+                    case 'translate':
                         $this->menu->showOneTranslate($chatId, $this->telegram, $previousAction['translate_id']);
                         $actionHandler->removeLastAction($chatId);
                         break;
@@ -172,8 +172,10 @@ class ArbeitsTelegramBot
                         $this->menu->showOne($chatId, $this->telegram, $previousAction['detail_id']);
                         $actionHandler->removeLastAction($chatId);
                         break;
-                    case 'forwardPage':
-                    case 'backPage':
+                    case 'forward_page':
+                        $this->menu->showResult($chatId, $this->telegram, $previousAction['specialist_id'], $previousAction['city_id'], $previousAction['page']);
+                        break;
+                    case 'back_page':
                         $this->menu->showResult($chatId, $this->telegram, $previousAction['specialist_id'], $previousAction['city_id'], $previousAction['page']);
                         $actionHandler->removeLastAction($chatId);
                         break;
