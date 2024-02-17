@@ -53,9 +53,7 @@ class ArbeitsTelegramBot
         switch ($messageText) {
             case '/start':
                 break;
-
             case '/back':
-
                 $previousAction = $this->actionHandler->getPreviousAction($chatId);
                 switch ($previousAction['type']) {
                     case 'translate':
@@ -86,7 +84,7 @@ class ArbeitsTelegramBot
                         $this->menu->platsbankenShowTranslateSpecialist($chatId, $this->telegram, $previousAction['occupation_id'], $previousAction['city_id'], true);
                         $this->actionHandler->removeLastAction($chatId);
                         break;
-                    case 'show_profession':
+                    case 'show_p':
                         $this->menu->showResult($chatId, $this->telegram, $previousAction['specialist_id'], $previousAction['city_id'], $startIndex = null);
                         $this->actionHandler->removeLastAction($chatId);
                         break;
@@ -96,6 +94,7 @@ class ArbeitsTelegramBot
                         break;
                     case 'forward_page':
                         $this->menu->showResult($chatId, $this->telegram, $previousAction['specialist_id'], $previousAction['city_id'], $previousAction['page']);
+                        $this->actionHandler->removeLastAction($chatId);
                         break;
                     case 'back_page':
                         $this->menu->showResult($chatId, $this->telegram, $previousAction['specialist_id'], $previousAction['city_id'], $previousAction['page']);
@@ -124,10 +123,7 @@ class ArbeitsTelegramBot
         if ($this->isJson($callbackData)) {
             $callbackData = json_decode($callbackData, true);
         }
-        // Инициализация ActionHandler
-        $actionHandler = new ActionHandler('histories');
 
-// Ваш switch/case
         switch (true) {
 
             case array_key_exists('unseen', $callbackData):
@@ -184,10 +180,10 @@ class ArbeitsTelegramBot
                 $this->actionHandler->addToHistory($chatId, ['type' => 'translate_specialist', 'city_id' => $city_id, 'occupation_id' => $occupation_id]);
                 $this->menu->platsbankenShowTranslateSpecialist($chatId, $this->telegram, $occupation_id, $city_id, true);
                 break;
-            case array_key_exists('show_profession', $callbackData):
-                $specialist_id = $callbackData['show_profession'];
+            case array_key_exists('show_p', $callbackData):
+                $specialist_id = $callbackData['show_p'];
                 $city_id = $callbackData['city_id'];
-                $this->actionHandler->addToHistory($chatId, ['type' => 'show_profession', 'city_id' => $city_id, 'specialist_id' => $specialist_id]);
+                $this->actionHandler->addToHistory($chatId, ['type' => 'show_p', 'city_id' => $city_id, 'specialist_id' => $specialist_id]);
                 $this->menu->showResult($chatId, $this->telegram, $specialist_id, $city_id, $startIndex = null);
                 break;
             case array_key_exists('show_detail_page', $callbackData):

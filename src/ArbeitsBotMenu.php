@@ -88,7 +88,7 @@ class ArbeitsBotMenu
                 $name = $item['name'];
 
                 // Добавляем кнопку в текущий ряд
-                $row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
+                $row[] = ['text' => $name, 'callback_data' => json_encode(['show_p' => $id, 'city_id' => $city_id],JSON_UNESCAPED_UNICODE)];
 
                 // Если текущий ряд заполнен, добавляем его в массив кнопок и создаем новый ряд
                 if (count($row) >= $columns) {
@@ -96,6 +96,7 @@ class ArbeitsBotMenu
                     $row = [];
                 }
             }
+
             // Если остались кнопки в текущем ряду, добавляем его в массив кнопок
             if (!empty($row)) {
                 $buttons[] = $row;

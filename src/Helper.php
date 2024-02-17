@@ -70,6 +70,7 @@ class Helper
         }
 
         $strTranslate = $translete->translate($str);
+
         $arrTranslate = explode("\r\n", $strTranslate);
         $arr = [];
         foreach ($arrTranslate as $value) {
