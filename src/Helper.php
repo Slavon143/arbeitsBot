@@ -126,6 +126,48 @@ class Helper
     }
 
 
+    public static function translateData($data, $translate, $translateKeys = false)
+    {
+        $str = '';
+        $res = [];
+
+        if ($translateKeys){
+            foreach ($data as $value) {
+                if ($value['id'] === $translateKeys) {
+                    foreach ($value['items'] as $item) {
+                        $str .= $item['name'] . '////' . $item['id'] . "\r\n";
+                    }
+                }
+            }
+        }else{
+            foreach ($data as $key => $value) {
+                if (isset($value['name'], $value['id'])) {
+                    $str .= $value['name'] . '////' . $value['id'] . "\r\n";
+                }
+            }
+        }
+
+        // Переводим строку
+        $transStr = $translate->translate($str);
+        $transStr = explode("\r\n", $transStr);
+
+        foreach ($transStr as $value) {
+            $value = strip_tags($value);
+            // Разбиваем строку на части по символу '////'
+            $parts = explode("////", $value);
+
+            // Проверяем, что массив содержит обе части (name и id)
+            if (isset($parts[0], $parts[1])) {
+                $res[] = [
+                    'name' => $parts[0],
+                    'id' => $parts[1]
+                ];
+            }
+        }
+        return $res;
+    }
+
+
     public static function arrayToString($array) {
         $pairs = [];
         foreach ($array as $key => $value) {

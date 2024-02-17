@@ -75,24 +75,24 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function transSpec($param)
+    public function showSpecialist($param)
     {
-
-        $telegram = $param['telegram'];
-        $chatId = $param['chat_id'];
         $occupation_id = $param['ok_id'];
-        $city_id = ['c_id'];
+        $chatId = $param['chat_id'];
+        $telegram = $param['telegram'];
+        $city_id = $param['c_id'];
 
         $occupation = $this->apiArbeits->getOccupation();
 
-        $occupationTranslate = Helper::specialistDataTranslate($occupation, $occupation_id, $this->apiTranslate);
+        $buttons = [];
+        $columns = 2;
+        $current_column = 0;
+        $current_row = [];
 
-        if ($occupationTranslate) {
-            $buttons = [];
-            $row = [];
-            $columns = 2; // Количество колонок
-
-            foreach ($occupationTranslate as $item) {
+        if ($param['trans']){
+            $occupation = Helper::translateData($occupation,$this->apiTranslate,$occupation_id);
+            Helper::debug($occupation);
+            foreach ($occupation as $item) {
                 $id = $item['id'];
                 $name = $item['name'];
 
@@ -105,77 +105,37 @@ class ArbeitsBotMenu
                     $row = [];
                 }
             }
+        }else{
+            foreach ($occupation as $item) {
+                if ($item['id'] == $occupation_id) {
+                    foreach ($item['items'] as $profession) {
+                        $id = $profession['id'];
+                        $name = $profession['name'];
 
-            // Если остались кнопки в текущем ряду, добавляем его в массив кнопок
-            if (!empty($row)) {
-                $buttons[] = $row;
-            }
+                        // Добавляем кнопку в текущую строку
+                        $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f'=>'showResult','spec_id'=>$id,'c_id'=>$city_id])];
 
-            // Отправляем сообщение с кнопками
-            $telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => 'Выберите направление:',
-                'reply_markup' => json_encode([
-                    'inline_keyboard' => $buttons
-                ]),
-            ]);
+                        // Увеличиваем счетчик текущей колонки
+                        $current_column++;
 
-        }
-    }
-
-
-    public function showSpecialist($param)
-    {
-        $occupation_id = $param['ok_id'];
-        $chatId = $param['chat_id'];
-        $telegram = $param['telegram'];
-        $city_id = $param['c_id'];
-
-        $occupation = $this->apiArbeits->getOccupation();
-        $buttons = [];
-
-        // Указываем количество колонок
-        $columns = 2;
-
-        // Инициализируем переменные для текущей колонки и строки
-        $current_column = 0;
-        $current_row = [];
-
-        foreach ($occupation as $item) {
-            if ($item['id'] == $occupation_id) {
-                foreach ($item['items'] as $profession) {
-                    $id = $profession['id'];
-                    $name = $profession['name'];
-
-                    // Добавляем кнопку в текущую строку
-                    $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f'=>'showResult','spec_id'=>$id,'c_id'=>$city_id])];
-
-                    // Увеличиваем счетчик текущей колонки
-                    $current_column++;
-
-                    // Если текущая колонка достигла максимальной ширины, добавляем текущую строку в массив кнопок и создаем новую строку
-                    if ($current_column >= $columns) {
-                        $buttons[] = $current_row;
-                        $current_row = [];
-                        $current_column = 0;
+                        // Если текущая колонка достигла максимальной ширины, добавляем текущую строку в массив кнопок и создаем новую строку
+                        if ($current_column >= $columns) {
+                            $buttons[] = $current_row;
+                            $current_row = [];
+                            $current_column = 0;
+                        }
                     }
                 }
             }
+            $ukrainian_flag_unicode = "🇺🇦";
+            $buttons[] = [[
+                'text' => $ukrainian_flag_unicode . ' Перевести:',
+                'callback_data' => Helper::arrayToString(['f'=>'showSpecialist','ok_id'=>$occupation_id,'c_id'=>$city_id,'trans'=>true])
+            ]];
         }
-
-        // Если осталась неполная строка, добавляем ее в массив кнопок
         if (!empty($current_row)) {
             $buttons[] = $current_row;
         }
-
-        // Добавляем кнопку "Перевести" в массив кнопок
-        $ukrainian_flag_unicode = "🇺🇦";
-        $buttons[] = [[
-            'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'callback_data' => Helper::arrayToString(['f'=>'transSpec','ok_id'=>$occupation_id,'c_id'=>$city_id])
-        ]];
-
-        // Отправляем сообщение с кнопками
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => 'Выберите специальность:',
@@ -246,7 +206,7 @@ class ArbeitsBotMenu
         $occupation = $this->apiArbeits->getOccupation();
         if ($translate) {
             $translateApi = new TranslateApi();
-            $occupation = Helper::occupationDataTranslate($occupation, $translateApi);
+            $occupation = Helper::translateData($occupation, $translateApi);
         }
         $buttons = [];
 
