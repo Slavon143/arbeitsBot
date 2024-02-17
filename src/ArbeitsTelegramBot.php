@@ -77,11 +77,11 @@ class ArbeitsTelegramBot
                         $this->actionHandler->removeLastAction($chatId);
                         break;
                     case 'show_specialist':
-                        $this->menu->platsbankenShowOccupationClass($chatId, $this->telegram, $previousAction['occupation_id'], $previousAction['city_id']);
+                        $this->menu->showSpecialist($chatId, $this->telegram, $previousAction['occupation_id'], $previousAction['city_id']);
                         $this->actionHandler->removeLastAction($chatId);
                         break;
                     case 'translate_specialist':
-                        $this->menu->platsbankenShowTranslateSpecialist($chatId, $this->telegram, $previousAction['occupation_id'], $previousAction['city_id'], true);
+                        $this->menu->transSpec($chatId, $this->telegram, $previousAction['occupation_id'], $previousAction['city_id'], true);
                         $this->actionHandler->removeLastAction($chatId);
                         break;
                     case 'show_p':
@@ -122,6 +122,18 @@ class ArbeitsTelegramBot
 
         if ($this->isJson($callbackData)) {
             $callbackData = json_decode($callbackData, true);
+        }
+
+
+        if (Helper::stringToArray($callbackData)){
+            $callbackData = Helper::stringToArray($callbackData);
+
+            $methodName = $callbackData['f'];
+            // Вызов метода с передачей параметров
+           $callbackData['telegram'] = $this->telegram;
+           $callbackData['chat_id'] = $chatId;
+
+            call_user_func([$menu, $methodName], $callbackData);
         }
 
         switch (true) {
@@ -172,13 +184,13 @@ class ArbeitsTelegramBot
                 $city_id = $callbackData['city_id'];
                 $occupation_id = $callbackData['show_specialist'];
                 $this->actionHandler->addToHistory($chatId, ['type' => 'show_specialist', 'city_id' => $city_id, 'occupation_id' => $occupation_id]);
-                $this->menu->platsbankenShowOccupationClass($chatId, $this->telegram, $occupation_id, $city_id);
+                $this->menu->showSpecialist($chatId, $this->telegram, $occupation_id, $city_id);
                 break;
             case array_key_exists('translate_specialist', $callbackData):
                 $occupation_id = $callbackData['translate_specialist'];
                 $city_id = $callbackData['city_id'];
                 $this->actionHandler->addToHistory($chatId, ['type' => 'translate_specialist', 'city_id' => $city_id, 'occupation_id' => $occupation_id]);
-                $this->menu->platsbankenShowTranslateSpecialist($chatId, $this->telegram, $occupation_id, $city_id, true);
+                $this->menu->transSpec($chatId, $this->telegram, $occupation_id, $city_id, true);
                 break;
             case array_key_exists('show_p', $callbackData):
                 $specialist_id = $callbackData['show_p'];

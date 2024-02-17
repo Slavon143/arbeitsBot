@@ -125,4 +125,46 @@ class Helper
         return $res;
     }
 
+
+    public static function arrayToString($array) {
+        $pairs = [];
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                // Если значение является массивом, преобразуем его в строку ключ=значение
+                foreach ($value as $subKey => $subValue) {
+                    $pairs[] = urlencode($key . '[' . $subKey . ']') . '=' . urlencode($subValue);
+                }
+            } else {
+                // Если значение не является массивом, просто добавляем его в виде ключ=значение
+                $pairs[] = urlencode($key) . '=' . urlencode($value);
+            }
+        }
+        // Собираем все пары ключ=значение в одну строку, разделенную символом "&"
+        return implode('&', $pairs);
+    }
+
+
+    public static function stringToArray($string) {
+        $array = [];
+        $pairs = explode('&', $string);
+        foreach ($pairs as $pair) {
+            list($key, $value) = explode('=', $pair, 2);
+            // Если ключ содержит квадратные скобки, это значит, что это вложенный массив
+            if (strpos($key, '[') !== false && strpos($key, ']') !== false) {
+                // Разбиваем ключ на название и индекс массива
+                preg_match('/(\w+)\[(\w+)\]/', $key, $matches);
+                // Если массив для этого ключа ещё не существует, создаем его
+                if (!isset($array[$matches[1]])) {
+                    $array[$matches[1]] = [];
+                }
+                // Добавляем значение во вложенный массив по указанному индексу
+                $array[$matches[1]][$matches[2]] = urldecode($value);
+            } else {
+                // Иначе, просто добавляем ключ и значение в массив
+                $array[$key] = urldecode($value);
+            }
+        }
+        return $array;
+    }
+
 }

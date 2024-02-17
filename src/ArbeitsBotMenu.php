@@ -21,7 +21,7 @@ class ArbeitsBotMenu
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => 'Platsbanken (Банк локаций)', 'callback_data' => json_encode(['platsbanken' => ''])],
+                        ['text' => 'Platsbanken (Банк локаций)', 'callback_data' => Helper::arrayToString(['f'=>'showRegion'])],
                         ['text' => 'Externa webbplatser (Внешние сайты)', 'callback_data' => 'webbplatser'],
                     ]
                 ],
@@ -31,8 +31,11 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function showRegion($chatId, $telegram)
+    public function showRegion($param)
     {
+        $telegram = $param['telegram'];
+        $chatId = $param['chat_id'];
+
         $getLocation = $this->apiArbeits->getLocation();
 
         $buttons = [];
@@ -47,7 +50,7 @@ class ArbeitsBotMenu
             $name = $item['name'];
 
             // Добавляем кнопку в текущую строку
-            $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_city' => '', 'region_id' => $id])];
+            $current_row[] = ['text' => $name, 'callback_data' =>  Helper::arrayToString(['f'=>'showCity','r_id'=>$id])];
 
             // Если текущая строка достигла максимальной ширины, добавляем ее в массив кнопок и создаем новую строку
             $current_column++;
@@ -72,8 +75,14 @@ class ArbeitsBotMenu
         ]);
     }
 
-    public function platsbankenShowTranslateSpecialist($chatId, $telegram, $occupation_id, $city_id, $translate = null)
+    public function transSpec($param)
     {
+
+        $telegram = $param['telegram'];
+        $chatId = $param['chat_id'];
+        $occupation_id = $param['ok_id'];
+        $city_id = ['c_id'];
+
         $occupation = $this->apiArbeits->getOccupation();
 
         $occupationTranslate = Helper::specialistDataTranslate($occupation, $occupation_id, $this->apiTranslate);
@@ -88,7 +97,7 @@ class ArbeitsBotMenu
                 $name = $item['name'];
 
                 // Добавляем кнопку в текущий ряд
-                $row[] = ['text' => $name, 'callback_data' => json_encode(['show_p' => $id, 'city_id' => $city_id],JSON_UNESCAPED_UNICODE)];
+                $row[] = ['text' => $name, 'callback_data' =>  Helper::arrayToString(['f'=>'showResult','spec_id'=>$id,'c_id'=>$city_id])];
 
                 // Если текущий ряд заполнен, добавляем его в массив кнопок и создаем новый ряд
                 if (count($row) >= $columns) {
@@ -115,8 +124,13 @@ class ArbeitsBotMenu
     }
 
 
-    public function platsbankenShowOccupationClass($chatId, $telegram, $occupation_id, $city_id, $translate = null)
+    public function showSpecialist($param)
     {
+        $occupation_id = $param['ok_id'];
+        $chatId = $param['chat_id'];
+        $telegram = $param['telegram'];
+        $city_id = $param['c_id'];
+
         $occupation = $this->apiArbeits->getOccupation();
         $buttons = [];
 
@@ -134,7 +148,7 @@ class ArbeitsBotMenu
                     $name = $profession['name'];
 
                     // Добавляем кнопку в текущую строку
-                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_profession' => $id, 'city_id' => $city_id])];
+                    $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f'=>'showResult','spec_id'=>$id,'c_id'=>$city_id])];
 
                     // Увеличиваем счетчик текущей колонки
                     $current_column++;
@@ -158,7 +172,7 @@ class ArbeitsBotMenu
         $ukrainian_flag_unicode = "🇺🇦";
         $buttons[] = [[
             'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'callback_data' => json_encode(['translate_specialist' => $occupation_id, 'city_id' => $city_id])
+            'callback_data' => Helper::arrayToString(['f'=>'transSpec','ok_id'=>$occupation_id,'c_id'=>$city_id])
         ]];
 
         // Отправляем сообщение с кнопками
@@ -172,8 +186,13 @@ class ArbeitsBotMenu
     }
 
 
-    public function showCity($chatId, $telegram, $region_id)
+    public function showCity($param)
     {
+
+        $telegram = $param['telegram'];
+        $region_id = $param['r_id'];
+        $chatId = $param['chat_id'];
+
         $getLocation = $this->apiArbeits->getLocation();
         $buttons = [];
 
@@ -189,7 +208,7 @@ class ArbeitsBotMenu
                     $name = $city['name'];
 
                     // Добавляем кнопку в текущий ряд
-                    $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_occupation' => '', 'city_id' => $id])];
+                    $current_row[] = ['text' => $name, 'callback_data' =>  Helper::arrayToString(['f'=>'platsbankenShowOccupation','c_id'=>$id])];
 
                     // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
                     $current_column++;
@@ -217,8 +236,13 @@ class ArbeitsBotMenu
     }
 
 
-    public function platsbankenShowOccupation($chatId, $telegram, $city_id, $translate = null)
+    public function platsbankenShowOccupation($param)
     {
+        $telegram = $param['telegram'];
+        $city_id = $param['c_id'];
+        $chatId = $param['chat_id'];
+        $translate = $param['trans'];
+
         $occupation = $this->apiArbeits->getOccupation();
         if ($translate) {
             $translateApi = new TranslateApi();
@@ -236,7 +260,7 @@ class ArbeitsBotMenu
             $name = $item['name'];
 
             // Добавляем кнопку в текущий ряд
-            $current_row[] = ['text' => $name, 'callback_data' => json_encode(['show_specialist' => $id, 'city_id' => $city_id])];
+            $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f'=>'showSpecialist','ok_id'=>$id,'c_id'=>$city_id])];
 
             // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
             $current_column++;
@@ -256,7 +280,8 @@ class ArbeitsBotMenu
             $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
             $buttons[] = [[
                 'text' => $ukrainian_flag_unicode . ' Перевести:',
-                'callback_data' => json_encode(['translate_occupation' => $city_id])
+                'callback_data' =>  Helper::arrayToString(['f'=>'platsbankenShowOccupation','c_id'=>$city_id,'trans'=>true])
+
             ]];
         }
         // Отправляем сообщение с кнопками
@@ -270,9 +295,21 @@ class ArbeitsBotMenu
     }
 
 
-    public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
+    public function showResult($param)
     {
+
+        $telegram = $param['telegram'];
+        $chatId = $param['chat_id'];
+        $city_id = $param['c_id'];
+        $specialist_id = $param['spec_id'];
+
+        if (isset($param['st_index'])){
+            $startIndex = $param['st_index'];
+        }else{
+            $startIndex = 0;
+        }
         $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id);
+
         $numberOfAds = $getAll['numberOfAds'];
 
         if ($numberOfAds == 0) {
@@ -295,8 +332,8 @@ class ArbeitsBotMenu
             // Создаем кнопки
             $inlineKeyboard = [];
 
-            $left_button = ['text' => '←', 'callback_data' => json_encode(['back_page' => $startIndex - 5, 'ci' => $city_id, 'spec' => $specialist_id])];
-            $right_button = ['text' => '→', 'callback_data' => json_encode(['forward_page' => $startIndex + 5, 'ci' => $city_id, 'spec' => $specialist_id])];
+            $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f'=>'showResult','st_index'=>$startIndex -5,'spec_id'=>$specialist_id,'c_id'=>$city_id])];
+            $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f'=>'showResult','st_index'=>$startIndex +5,'spec_id'=>$specialist_id,'c_id'=>$city_id])];
 
             // Проверяем, нужно ли показывать кнопку "Назад"
             if ($startIndex > 0) {
@@ -347,7 +384,7 @@ class ArbeitsBotMenu
             $menu = [
                 [
                     'text' => '⏬ Подробнее',
-                    'callback_data' => json_encode(['show_detail_page' => '', 'detail_id' => $ad['id']]),
+                    'callback_data' => Helper::arrayToString(['f'=>'showOne','detail_id'=>$ad['id']]),
                 ],
                 [
                     'text' => 'Скрыть',
@@ -386,8 +423,12 @@ class ArbeitsBotMenu
         }
     }
 
-    public function showOne($chatId, $telegram, $key_board)
+    public function showOne($param)
     {
+        $telegram = $param['telegram'];
+        $chatId = $param['chat_id'];
+        $key_board = $param['detail_id'];
+
         $ad = $this->apiArbeits->getOne($key_board);
 
         //newArray
@@ -409,7 +450,7 @@ class ArbeitsBotMenu
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => json_encode(['translate' => $key_board])]
+                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => Helper::arrayToString(['f'=>'showOneTranslate','detail_id'=>$key_board])]
                     ]
                 ]
             ]),
