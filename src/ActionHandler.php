@@ -28,6 +28,14 @@ class ActionHandler {
         return end($previousHistory);
     }
 
+    // Метод для удаления history файла для указанного chat_id
+    public function removeHistoryFile($chatId) {
+        $historyFilePath = $this->getHistoryFilePath($chatId);
+        if (file_exists($historyFilePath)) {
+            unlink($historyFilePath);
+        }
+    }
+
     public function removeLastAction($chatId) {
         $historyFilePath = $this->getHistoryFilePath($chatId);
         $history = json_decode(file_get_contents($historyFilePath), true);

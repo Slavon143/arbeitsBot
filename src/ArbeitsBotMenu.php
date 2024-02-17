@@ -22,7 +22,7 @@ class ArbeitsBotMenu
                 'inline_keyboard' => [
                     [
                         ['text' => 'Platsbanken (Банк локаций)', 'callback_data' => json_encode(['platsbanken' => ''])],
-                        ['text' => 'Externa webbplatser (Внешние сайты)', 'callback_data' => 'webbplatser']
+                        ['text' => 'Externa webbplatser (Внешние сайты)', 'callback_data' => 'webbplatser'],
                     ]
                 ],
                 'resize_keyboard' => true,
@@ -111,17 +111,6 @@ class ArbeitsBotMenu
             ]);
 
         }
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Вернуться назад:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'Назад', 'callback_data' => json_encode(['back' => 'back'])]
-                    ]
-                ]
-            ]),
-        ]);
     }
 
 
@@ -179,8 +168,6 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
-        $this->buttonBack($chatId, $telegram);
     }
 
 
@@ -226,7 +213,6 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-        $this->buttonBack($chatId, $telegram);
     }
 
 
@@ -272,7 +258,6 @@ class ArbeitsBotMenu
                 'callback_data' => json_encode(['translate_occupation' => $city_id])
             ]];
         }
-
         // Отправляем сообщение с кнопками
         $telegram->sendMessage([
             'chat_id' => $chatId,
@@ -281,24 +266,8 @@ class ArbeitsBotMenu
                 'inline_keyboard' => $buttons
             ]),
         ]);
-
-        $this->buttonBack($chatId, $telegram);
     }
 
-    public function buttonBack($ctahId, $telegram)
-    {
-        $telegram->sendMessage([
-            'chat_id' => $ctahId,
-            'text' => 'Вернуться назад:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => 'Назад', 'callback_data' => json_encode(['back' => 'back'])]
-                    ]
-                ]
-            ]),
-        ]);
-    }
 
     public function showResult($chatId, $telegram, $specialist_id, $city_id, $startIndex = null)
     {
@@ -349,16 +318,11 @@ class ArbeitsBotMenu
                 'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
             ]);
         }
-
-
-        $this->buttonBack($chatId, $telegram);
     }
 
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram)
     {
-        $messages = []; // Массив для хранения текста сообщений с полной информацией
-
         foreach ($ads['ads'] as $ad) {
             // Создаем текст сообщения с полной информацией об объявлении
             $title = $ad['title'];
@@ -378,32 +342,28 @@ class ArbeitsBotMenu
             // Создаем текст сообщения
             $messageText = "<b>$title</b>\n$additionalInfo";
 
-            // Формируем кнопку "Подробнее" для каждого объявления
+            // Формируем кнопку "Подробнее" и кнопку "Скрыть" для каждого объявления
             $menu = [
                 [
                     'text' => '⏬ Подробнее',
                     'callback_data' => json_encode(['show_detail_page' => '', 'detail_id' => $ad['id']]),
+                ],
+                [
+                    'text' => 'Скрыть',
+                    'callback_data' => json_encode(['unseen' => '']),
                 ]
             ];
 
-            // Добавляем текст сообщения и кнопку в массив сообщений
-            $messages[] = [
+            // Отправляем сообщение с полной информацией об объявлении и кнопкой "Подробнее" и "Скрыть"
+            $objTelegram->sendMessage([
+                'chat_id' => $chatId,
                 'text' => $messageText,
                 'reply_markup' => json_encode(['inline_keyboard' => [$menu]]),
                 'parse_mode' => 'HTML',
-            ];
-        }
-
-        // Отправляем сообщения с полной информацией об объявлениях
-        foreach ($messages as $message) {
-            $objTelegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => $message['text'],
-                'reply_markup' => $message['reply_markup'],
-                'parse_mode' => $message['parse_mode'],
             ]);
         }
     }
+
 
     public function showOneTranslate($chatId, $telegram, $key_board)
     {
@@ -422,7 +382,6 @@ class ArbeitsBotMenu
                 'text' => strip_tags($translate),
                 'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
             ]);
-            $this->buttonBack($chatId, $telegram);
         }
     }
 
@@ -454,6 +413,5 @@ class ArbeitsBotMenu
                 ]
             ]),
         ]);
-        $this->buttonBack($chatId, $telegram);
     }
 }
