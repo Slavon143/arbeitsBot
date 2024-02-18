@@ -6,6 +6,7 @@ class SettingsClass
 {
     public $arrSettingLanguage = [
         'language_ukrainian'=>[
+            'btnTranslate'=>'Перекласти',
             // 'id' => 'Ідентифікатор',
             'title' => 'Назва',
             'description' => 'Опис',
@@ -78,6 +79,7 @@ class SettingsClass
             'skills_2_required' => 'Потрібна навичка 3',
         ],
         'language_russian'=>[
+            'btnTranslate'=>'Перевести',
 //            'id' => 'Идентификатор',
             'title' => 'Название',
             'description' => 'Описание',
@@ -150,6 +152,7 @@ class SettingsClass
             'skills_2_required' => 'Требуется навык 3',
         ],
         'language_english'=>[
+            'btnTranslate'=>'Translate',
             'title' => 'Title',
             'description' => 'Description',
             'publishedDate' => 'Published Date',
@@ -240,6 +243,47 @@ class SettingsClass
         'language_english'=>[
             'title'=>'Select specialty:',
             'buttonTranslate'=>'Translate:'
+        ]
+    ];
+
+    public $arrSettingbuildMenuFromAds = [
+        'language_ukrainian' => [
+            'publishedDate' => 'Дата публікації:',
+            'occupation' => 'Професія:',
+            'workplace' => 'Місце роботи:',
+            'workplaceName' => 'Назва місця роботи:',
+            'positions' => 'Кількість позицій:',
+            'details' => 'Детальніше',
+            'Hide' => 'Приховати',
+        ],
+        'language_russian'=>[
+            'publishedDate' => 'Дата публикации:',
+            'occupation' => 'Профессия:',
+            'workplace' => 'Место работы:',
+            'workplaceName' => 'Название места работы:',
+            'positions' => 'Количество позиций:',
+            'details' => 'Подробнее',
+            'Hide' => 'Скрыть',
+        ],
+        'language_english'=>[
+            'publishedDate' => 'Publication date:',
+            'occupation' => 'Profession:',
+            'workplace' => 'Place of work:',
+            'workplaceName' => 'Job name:',
+            'positions' => 'Number of positions:',
+            'details' => 'More details',
+            'Hide' => 'Hide',
+        ]
+    ];
+    public $arrSettingStartMenuResult = [
+        'language_ukrainian' => [
+            'notFount' => 'На жаль, оголошень не знайдено.',
+        ],
+        'language_russian'=>[
+            'notFount'=>'К сожалению, объявлений не найдено.'
+        ],
+        'language_english'=>[
+            'notFount'=>'Sorry, no advertisements found.',
         ]
     ];
     public $arrSettingStartMenu = [
