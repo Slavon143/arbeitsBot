@@ -8,6 +8,7 @@ class ArbeitsBotMenu
     public $apiTranslate;
 
     public $language;
+
     public $db;
 
     public $settingArray;

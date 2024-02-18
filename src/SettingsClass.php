@@ -223,7 +223,7 @@ class SettingsClass
             'title' => 'Виберіть регіон:'
         ],
         'language_russian'=>[
-            'title'=>'Виберите регіон:'
+            'title'=>'Выберите регион:'
         ],
         'language_english'=>[
             'title'=>'Select a region:'
