@@ -2,53 +2,48 @@
 
 namespace src;
 class ActionHandler {
-    private $historyDirPath;
+    private $db;
 
-    public function __construct($historyDirPath) {
-        $this->historyDirPath = $historyDirPath;
+    public function __construct($dbFilePath) {
+        $this->db = new \SQLite3($dbFilePath);
+
+        // Создаем таблицу для хранения истории, если она не существует
+        $this->db->exec('CREATE TABLE IF NOT EXISTS history (
+                            chat_id TEXT,
+                            action TEXT,
+                            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                        )');
     }
 
-    // Метод для добавления действия в историю для указанного chat_id
     public function addToHistory($chatId, $action) {
-        $historyFilePath = $this->getHistoryFilePath($chatId);
-        $history = json_decode(file_get_contents($historyFilePath), true);
-        $history[] = $action;
-        file_put_contents($historyFilePath, json_encode($history));
+        $action = json_encode($action);
+        $stmt = $this->db->prepare('INSERT INTO history (chat_id, action) VALUES (:chatId, :action)');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $stmt->bindValue(':action', $action, SQLITE3_TEXT);
+        $stmt->execute();
     }
 
-    // Метод для получения предыдущего действия из истории для указанного chat_id
     public function getPreviousAction($chatId) {
-        $historyFilePath = $this->getHistoryFilePath($chatId);
-        $history = json_decode(file_get_contents($historyFilePath), true);
-
-        // Получаем историю без последнего элемента
-        $previousHistory = array_slice($history, 0, -1);
-
-        // Получаем последний элемент в новой истории
-        return end($previousHistory);
+        $stmt = $this->db->prepare('SELECT action FROM history WHERE chat_id = :chatId ORDER BY timestamp DESC LIMIT 1 OFFSET 1');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        return ($row !== false) ? json_decode($row['action'],1) : null;
     }
 
-    // Метод для удаления history файла для указанного chat_id
     public function removeHistoryFile($chatId) {
-        $historyFilePath = $this->getHistoryFilePath($chatId);
-        if (file_exists($historyFilePath)) {
-            unlink($historyFilePath);
-        }
+        $stmt = $this->db->prepare('DELETE FROM history WHERE chat_id = :chatId');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $stmt->execute();
     }
 
     public function removeLastAction($chatId) {
-        $historyFilePath = $this->getHistoryFilePath($chatId);
-        $history = json_decode(file_get_contents($historyFilePath), true);
-
-        // Удаляем последний элемент истории
-        array_pop($history);
-
-        // Записываем обновленную историю в файл
-        file_put_contents($historyFilePath, json_encode($history));
+        $this->db->exec('DELETE FROM history WHERE ROWID = (SELECT MAX(ROWID) FROM history WHERE chat_id = "'.$chatId.'")');
     }
 
-    // Вспомогательный метод для получения пути к файлу истории для указанного chat_id
-    private function getHistoryFilePath($chatId) {
-        return $this->historyDirPath . '/' . $chatId . '_history.json';
+    // Метод закрытия соединения с базой данных
+    public function close() {
+        $this->db->close();
     }
 }
+

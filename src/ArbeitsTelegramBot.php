@@ -27,9 +27,9 @@ class ArbeitsTelegramBot
         $this->incomingRequest = json_decode(file_get_contents('php://input'), true);
         $this->telegram = new Api($this->token);
 
-        $this->menu = new \src\ArbeitsBotMenu();
+        $this->menu = new ArbeitsBotMenu();
 
-        $this->actionHandler = new ActionHandler('histories');
+        $this->actionHandler = new ActionHandler(__DIR__ . '/../db/database.db');
     }
 
     public function listen()
@@ -57,6 +57,7 @@ class ArbeitsTelegramBot
                 break;
             case '/back':
                 $previousAction = $this->actionHandler->getPreviousAction($chatId);
+
                 $previousAction['telegram'] = $this->telegram;
                 $previousAction['chat_id'] = $chatId;
                 $previousAction['message_id'] = $message['message_id'];
