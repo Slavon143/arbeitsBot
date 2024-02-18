@@ -218,16 +218,15 @@ class SettingsClass
             'skills_2_required' => 'Skills Required',
         ]
     ];
-
     public $arrSettingStartMenuRegion = [
         'language_ukrainian' => [
             'title' => 'Виберіть регіон:'
         ],
         'language_russian'=>[
-            'title'=>'Выберите регион:'
+            'title'=>'Виберите регіон:'
         ],
         'language_english'=>[
-            'title'=>'Choose region:'
+            'title'=>'Select a region:'
         ]
     ];
 

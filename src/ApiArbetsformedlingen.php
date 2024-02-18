@@ -16,7 +16,7 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
-    public function showAll($startIndex, $cityId, $profession_id) {
+    public function showAll($startIndex, $cityId, $profession_id,$searchText=null) {
         $filters = [];
 
         if ($cityId !== null) {
@@ -30,6 +30,12 @@ class ApiArbetsformedlingen
             $filters[] = [
                 "type" => "occupationGroup",
                 "value" => "$profession_id"
+            ];
+        }
+        if ($searchText != null){
+            $filters[] = [
+                "type" => "freetext",
+                "value" => "$searchText"
             ];
         }
 

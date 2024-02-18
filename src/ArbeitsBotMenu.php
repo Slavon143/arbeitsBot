@@ -176,7 +176,6 @@ class ArbeitsBotMenu
         ]);
     }
 
-
     public function showCity($param)
     {
         $telegram = $param['telegram'];
@@ -228,7 +227,6 @@ class ArbeitsBotMenu
             ]),
         ]);
     }
-
 
     public function platsbankenShowOccupation($param)
     {
@@ -299,16 +297,24 @@ class ArbeitsBotMenu
         ]);
     }
 
-
     public function showResult($param)
     {
-
-        $telegram = $param['telegram'];
         $chatId = $param['chat_id'];
-        $city_id = $param['c_id'];
-        $specialist_id = $param['spec_id'];
+        $telegram = $param['telegram'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
+        if (!empty($param['se_t'])){
+            $searchText = $param['se_t'];
+        }else{
+            $city_id = $param['c_id'];
+            $specialist_id = $param['spec_id'];
+        }
+
+        if ($this->db->getLanguageChoices($chatId)){
+            $this->language = $this->db->getLanguageChoices($chatId);
+        }else{
+            $this->language = 'language_ukrainian';
+        }
+
         $tramslateText = $this->settingArray->arrSettingStartMenuResult[$this->language];
 
         if (isset($param['st_index'])) {
@@ -316,7 +322,7 @@ class ArbeitsBotMenu
         } else {
             $startIndex = 0;
         }
-        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id);
+        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id,$searchText);
 
         $numberOfAds = $getAll['numberOfAds'];
 
@@ -340,9 +346,15 @@ class ArbeitsBotMenu
             // Создаем кнопки
             $inlineKeyboard = [];
 
-            $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
-            $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
+            if (!empty($searchText)){
+                $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'se_t'=>$searchText])];
+                $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5,'se_t'=>$searchText])];
 
+            }else{
+                $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
+                $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
+
+            }
             // Проверяем, нужно ли показывать кнопку "Назад"
             if ($startIndex > 0) {
                 $inlineKeyboard[] = $left_button;
@@ -436,7 +448,12 @@ class ArbeitsBotMenu
         $chatId = $param['chat_id'];
         $key_board = $param['detail_id'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
+        if ($this->db->getLanguageChoices($chatId)){
+            $this->language = $this->db->getLanguageChoices($chatId);
+        }else{
+            $this->language = 'language_ukrainian';
+        }
+
         $tramslateText = $this->settingArray->arrSettingLanguage[$this->language];
 
         $ad = $this->apiArbeits->getOne($key_board);

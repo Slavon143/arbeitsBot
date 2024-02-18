@@ -50,9 +50,16 @@ class ArbeitsTelegramBot
         $messageText = $message['text'];
         $chatId = $message['chat']['id'];
 
+        if (substr($messageText, 0, 1) !== '/') {
+            $param = [];
+            $param['telegram'] = $this->telegram;
+            $param['chat_id'] = $chatId;
+            $param['se_t'] = $messageText;
+
+            $this->menu->showResult($param);
+        }
         switch ($messageText) {
             case '/start':
-
                 break;
             case '/home':
                 $this->actionHandler->removeHistoryFile($chatId);
