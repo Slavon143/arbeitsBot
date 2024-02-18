@@ -91,7 +91,6 @@ class ArbeitsBotMenu
 
         if ($param['trans']){
             $occupation = Helper::translateData($occupation,$this->apiTranslate,$occupation_id);
-            Helper::debug($occupation);
             foreach ($occupation as $item) {
                 $id = $item['id'];
                 $name = $item['name'];
@@ -395,8 +394,6 @@ class ArbeitsBotMenu
         if ($param['trans']){
             $str = $this->apiTranslate->translate($str);
             $str = strip_tags($str);
-
-            Helper::debug(strip_tags($str));
         }
         $telegram->sendMessage([
             'chat_id' => $chatId,
@@ -404,18 +401,20 @@ class ArbeitsBotMenu
             'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
         ]);
 
-        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+        if (!$param['trans']){
+            $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
 
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => $ukrainian_flag_unicode . ' Перевести:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => Helper::arrayToString(['f'=>'showOne','detail_id'=>$key_board,'trans'=>true])]
+            $telegram->sendMessage([
+                'chat_id' => $chatId,
+                'text' => $ukrainian_flag_unicode . ' Перевести:',
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [
+                        [
+                            ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => Helper::arrayToString(['f'=>'showOne','detail_id'=>$key_board,'trans'=>true])]
+                        ]
                     ]
-                ]
-            ]),
-        ]);
+                ]),
+            ]);
+        }
     }
 }
