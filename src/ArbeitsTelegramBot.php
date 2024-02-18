@@ -51,9 +51,12 @@ class ArbeitsTelegramBot
         $chatId = $message['chat']['id'];
 
         switch ($messageText) {
+            case '/start':
+
+                break;
             case '/home':
                 $this->actionHandler->removeHistoryFile($chatId);
-                $this->menu->startMenu($chatId, $this->telegram);
+                $this->menu->sendLanguageMenu($this->telegram,$chatId);
                 break;
             case '/back':
                 $previousAction = $this->actionHandler->getPreviousAction($chatId);

@@ -13,6 +13,10 @@ class ActionHandler {
                             action TEXT,
                             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
                         )');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user_languages (
+                        chat_id TEXT PRIMARY KEY,
+                        lang TEXT
+                    )');
     }
 
     public function addToHistory($chatId, $action) {
@@ -39,6 +43,22 @@ class ActionHandler {
 
     public function removeLastAction($chatId) {
         $this->db->exec('DELETE FROM history WHERE ROWID = (SELECT MAX(ROWID) FROM history WHERE chat_id = "'.$chatId.'")');
+    }
+
+    public function recordLanguageChoice($chatId, $lang) {
+        $stmt = $this->db->prepare('INSERT OR REPLACE INTO user_languages (chat_id, lang) VALUES (:chatId, :lang)');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $stmt->bindValue(':lang', $lang, SQLITE3_TEXT);
+        $stmt->execute();
+    }
+
+    // Метод получения языка пользователя по chat_id
+    public function getLanguageChoices($chatId) {
+        $stmt = $this->db->prepare('SELECT lang FROM user_languages WHERE chat_id = :chatId');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        return ($row !== false) ? $row['lang'] : null;
     }
 
     // Метод закрытия соединения с базой данных

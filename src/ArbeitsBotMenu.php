@@ -4,20 +4,37 @@ namespace src;
 
 class ArbeitsBotMenu
 {
+
     public $apiArbeits;
     public $apiTranslate;
+
+    public $language;
+    public $db;
+
+    public $settingArrayPath;
 
     public function __construct()
     {
         $this->apiArbeits = new ApiArbetsformedlingen();
         $this->apiTranslate = new TranslateApi();
+        $this->db = new ActionHandler(__DIR__ . '/../db/database.db');
+        $this->settingArrayPath = __DIR__ . '/../settings/ArraySettings.php';
     }
 
-    public function startMenu($chatId, $objTelegram)
+    public function startMenu($param)
     {
-        $objTelegram->sendMessage([
+        require $this->settingArrayPath;
+
+        $telegram = $param['telegram'];
+        $chatId = $param['chat_id'];
+        $lang = $param['lang'];
+
+        $this->db->recordLanguageChoice($chatId, $lang);
+        $this->language = $this->db->getLanguageChoices($chatId);
+
+        $telegram->sendMessage([
             'chat_id' => $chatId,
-            'text' => 'Сделайте выбор ресурсов:',
+            'text' => $arrSettingStartMenu[$this->language]['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
@@ -30,6 +47,7 @@ class ArbeitsBotMenu
             ])
         ]);
     }
+
 
     public function showRegion($param)
     {
@@ -417,4 +435,26 @@ class ArbeitsBotMenu
             ]);
         }
     }
+    function sendLanguageMenu($telegram, $chatId) {
+        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
+        $russian_flag_unicode = "🇷🇺"; // Unicode символ для российского флага
+        $english_flag_unicode = "🇬🇧"; // Unicode символ для английского флага
+
+        $telegram->sendMessage([
+            'chat_id' => $chatId,
+            'text' => 'Выберите язык:',
+            'reply_markup' => json_encode([
+                'inline_keyboard' => [
+                    [
+                        ['text' => $ukrainian_flag_unicode . ' Українська', 'callback_data' => Helper::arrayToString(['f'=>'startMenu','lang'=>'language_ukrainian'])],
+                        ['text' => $russian_flag_unicode . ' Русский', 'callback_data' => Helper::arrayToString(['f'=>'startMenu','lang'=>'language_russian'])],
+                        ['text' => $english_flag_unicode . ' English', 'callback_data' => Helper::arrayToString(['f'=>'startMenu','lang'=>'language_english'])]
+                    ]
+                ]
+            ]),
+        ]);
+    }
+
+
+
 }

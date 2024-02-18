@@ -56,7 +56,6 @@ class Helper
         file_put_contents(__DIR__ . '/classDebug.txt', var_export($data, 1));
     }
 
-
     public static function specialistDataTranslate($arr, $occupation_id, $translete)
     {
 
