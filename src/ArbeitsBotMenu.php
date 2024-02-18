@@ -348,7 +348,7 @@ class ArbeitsBotMenu
                 ],
                 [
                     'text' => 'Скрыть',
-                    'callback_data' => json_encode(['unseen' => '']),
+                    'callback_data' => Helper::arrayToString(['f'=>'delMessage']),
                 ]
             ];
 
@@ -362,25 +362,21 @@ class ArbeitsBotMenu
         }
     }
 
+    public function delMessage($param){
+        $chatId = $param['chat_id'];
+        $messageId = $param['message_id'];
 
-    public function showOneTranslate($chatId, $telegram, $key_board)
-    {
-        $ad = $this->apiArbeits->getOne($key_board);
+        $url = "https://api.telegram.org/bot{$_ENV['TELEGRAM_BOT_TOKEN']}/deleteMessage?chat_id={$chatId}&message_id={$messageId}";
 
-        //newArray
-        require __DIR__ . '/../settings/ArraySettings.php';
+        $ch = curl_init();
 
-        $translate = Helper::processJobData($ad, $newArray);
+        // Установка URL и других нужных параметров
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $translate = $this->apiTranslate->translate($translate);
-
-        if (!empty($translate)) {
-            $telegram->sendMessage([
-                'chat_id' => $chatId,
-                'text' => strip_tags($translate),
-                'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
-            ]);
-        }
+        // Выполнение запроса, получение ответа и закрытие сессии
+        curl_exec($ch);
+        curl_close($ch);
     }
 
     public function showOne($param)
@@ -396,6 +392,12 @@ class ArbeitsBotMenu
 
         $str = Helper::processJobData($ad, $newArrayUa);
 
+        if ($param['trans']){
+            $str = $this->apiTranslate->translate($str);
+            $str = strip_tags($str);
+
+            Helper::debug(strip_tags($str));
+        }
         $telegram->sendMessage([
             'chat_id' => $chatId,
             'text' => $str,
@@ -410,7 +412,7 @@ class ArbeitsBotMenu
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => Helper::arrayToString(['f'=>'showOneTranslate','detail_id'=>$key_board])]
+                        ['text' => $ukrainian_flag_unicode . ' Перевести:', 'callback_data' => Helper::arrayToString(['f'=>'showOne','detail_id'=>$key_board,'trans'=>true])]
                     ]
                 ]
             ]),
