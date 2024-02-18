@@ -15,14 +15,13 @@ class TranslateApi
         $env->load(__DIR__ . '/../.env');
     }
 
-    public function translate($text)
+    public function translate($text,$language)
     {
-
         // Кодируем текст для URL
         $encoded_text = urlencode($text);
 
         // Формируем URL
-        $url = $_ENV['TRANSLATE_URL'] . $encoded_text . '&sl=auto&tl=uk&hl=en';
+        $url = $_ENV['TRANSLATE_URL'] . $encoded_text . "&sl=auto&tl=$language&hl=en";
 
         // Создаем cURL сессию
         $curl = curl_init();
@@ -66,7 +65,6 @@ class TranslateApi
         $response = json_decode($response, true);
 
         return $this->extractTranslations($response);
-
     }
 
     public function extractTranslations($response)

@@ -125,7 +125,7 @@ class Helper
     }
 
 
-    public static function translateData($data, $translate, $translateKeys = false)
+    public static function translateData($data, $translate, $translateKeys = false,$language)
     {
         $str = '';
         $res = [];
@@ -147,7 +147,7 @@ class Helper
         }
 
         // Переводим строку
-        $transStr = $translate->translate($str);
+        $transStr = $translate->translate($str,$language);
         $transStr = explode("\r\n", $transStr);
 
         foreach ($transStr as $value) {
