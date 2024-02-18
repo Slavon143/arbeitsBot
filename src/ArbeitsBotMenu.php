@@ -151,13 +151,13 @@ class ArbeitsBotMenu
             }
             if ($this->language == 'language_ukrainian'){
                 $flag_unicode = "🇺🇦";
-                $langParam = 'ua';
+                $langParam = 'uk';
             }elseif ($this->language == 'language_russian'){
                 $flag_unicode = "🇷🇺";
                 $langParam = 'ru';
             }else{
                 $flag_unicode = "🇬🇧";
-                $langParam = 'gb';
+                $langParam = 'en';
             }
             $buttons[] = [[
                 'text' => $flag_unicode . $tramslateText['buttonTranslate'],
@@ -243,7 +243,7 @@ class ArbeitsBotMenu
         $occupation = $this->apiArbeits->getOccupation();
         if ($translate) {
             $translateApi = new TranslateApi();
-            $occupation = Helper::translateData($occupation, $translateApi,false,$translate);
+            $occupation = Helper::translateData($occupation, $translateApi,false,$param['trans']);
         }
         $buttons = [];
 
@@ -275,13 +275,13 @@ class ArbeitsBotMenu
         if (!$translate) {
             if ($this->language == 'language_ukrainian'){
                 $flag_unicode = "🇺🇦";
-                $langParam = 'ua';
+                $langParam = 'uk';
             }elseif ($this->language == 'language_russian'){
                 $flag_unicode = "🇷🇺";
                 $langParam = 'ru';
             }else{
                 $flag_unicode = "🇬🇧";
-                $langParam = 'gb';
+                $langParam = 'en';
             }
             $buttons[] = [[
                 'text' => $flag_unicode . $tramslateText['buttonTranslate'],

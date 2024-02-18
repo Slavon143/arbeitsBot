@@ -17,6 +17,7 @@ class TranslateApi
 
     public function translate($text,$language)
     {
+
         // Кодируем текст для URL
         $encoded_text = urlencode($text);
 
@@ -65,6 +66,7 @@ class TranslateApi
         $response = json_decode($response, true);
 
         return $this->extractTranslations($response);
+
     }
 
     public function extractTranslations($response)
