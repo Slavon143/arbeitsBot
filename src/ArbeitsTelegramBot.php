@@ -11,9 +11,9 @@ use Symfony\Component\Dotenv\Dotenv;
 class ArbeitsTelegramBot
 {
     protected $token;
-    protected $incomingRequest;
+    protected $update;
     protected $telegram;
-
+    protected $chat_id;
     protected $menu;
 
     protected $actionHandler;
@@ -23,57 +23,60 @@ class ArbeitsTelegramBot
         $env = new Dotenv();
         $env->load(__DIR__ . '/../.env');
         $this->token = $_ENV['TELEGRAM_BOT_TOKEN'];
-
-        $this->incomingRequest = json_decode(file_get_contents('php://input'), true);
+        $this->update = json_decode(file_get_contents('php://input'), true);
         $this->telegram = new Api($this->token);
-
-        $this->menu = new ArbeitsBotMenu();
-
+        $this->chat_id = $this->extractChatId($this->update);
         $this->actionHandler = new ActionHandler(__DIR__ . '/../db/database.db');
+        $this->menu = new ArbeitsBotMenu($this->chat_id,$this->telegram,$this->actionHandler);
     }
 
     public function listen()
     {
-        $update = json_decode(file_get_contents('php://input'), true);
-        $message = $update['message'] ?? null;
-        $callbackQuery = $update['callback_query'] ?? null;
+        $message = $this->update['message'] ?? null;
+        $callbackQuery = $this->update['callback_query'] ?? null;
 
-        if ($message) {
-            $this->handleMessage($message);
-        } elseif ($callbackQuery) {
-            $this->handleCallbackQuery($callbackQuery);
+        if (!$this->actionHandler->getLanguageChoices($this->chat_id)) {
+            if ($callbackQuery) {
+                $selectedLanguage = Helper::stringToArray($callbackQuery['data']);
+                $this->actionHandler->recordLanguageChoice($this->chat_id,$selectedLanguage['lang']);
+                $this->handleCallbackQuery($callbackQuery);
+            } else {
+                $this->menu->sendLanguageMenu();
+            }
+        } else {
+            if ($callbackQuery) {
+                if (isset(Helper::stringToArray($callbackQuery['data'])['lang'])){
+                    $this->actionHandler->recordLanguageChoice($this->chat_id,Helper::stringToArray($callbackQuery['data'])['lang']);
+                }
+                $this->handleCallbackQuery($callbackQuery);
+            }else{
+                $this->handleMessage($message);
+            }
         }
     }
+
 
     protected function handleMessage($message)
     {
         $messageText = $message['text'];
-        $chatId = $message['chat']['id'];
-
-        if (substr($messageText, 0, 1) !== '/') {
-            $param = [];
-            $param['telegram'] = $this->telegram;
-            $param['chat_id'] = $chatId;
-            $param['se_t'] = $messageText;
-
-            $this->menu->showResult($param);
-        }
         switch ($messageText) {
             case '/start':
                 break;
+            case '/changelanguage':
+                $this->menu->sendLanguageMenu();
+                break;
             case '/home':
-                $this->actionHandler->removeHistoryFile($chatId);
-                $this->menu->sendLanguageMenu($this->telegram,$chatId);
+                $this->actionHandler->removeHistoryFile($this->chat_id);
+                $this->menu->startMenu();
                 break;
             case '/back':
-                $previousAction = $this->actionHandler->getPreviousAction($chatId);
-
+                $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
                 $previousAction['telegram'] = $this->telegram;
-                $previousAction['chat_id'] = $chatId;
+                $previousAction['chat_id'] = $this->chat_id;
                 $previousAction['message_id'] = $message['message_id'];
 
                 call_user_func([$this->menu, $previousAction['f']], $previousAction);
-                $this->actionHandler->removeLastAction($chatId);
+                $this->actionHandler->removeLastAction($this->chat_id);
                 break;
             default:
                 break;
@@ -83,20 +86,29 @@ class ArbeitsTelegramBot
     protected function handleCallbackQuery($callbackQuery)
     {
         $callbackData = $callbackQuery['data'];
-        $chatId = $callbackQuery['message']['chat']['id'];
         $menu = $this->menu;
 
         if (Helper::stringToArray($callbackData)) {
             $callbackData = Helper::stringToArray($callbackData);
             $methodName = $callbackData['f'];
 
-            $this->actionHandler->addToHistory($chatId, $callbackData);
+            $this->actionHandler->addToHistory($this->chat_id, $callbackData);
             // Вызов метода с передачей параметров
-            $callbackData['telegram'] = $this->telegram;
-            $callbackData['chat_id'] = $chatId;
-            $callbackData['message_id'] = $callbackQuery['message']['message_id'];
 
+            $callbackData['message_id'] = $callbackQuery['message']['message_id'];
             call_user_func([$menu, $methodName], $callbackData);
         }
+    }
+
+    private function extractChatId($update)
+    {
+        if ($update && isset($update['message']['chat']['id'])) {
+            return $update['message']['chat']['id'];
+        } elseif ($update && isset($update['callback_query']['message']['chat']['id'])) {
+            return $update['callback_query']['message']['chat']['id'];
+        }
+
+        // Возвращаем значение по умолчанию (может потребоваться в вашем случае)
+        return null;
     }
 }

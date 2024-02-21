@@ -125,7 +125,7 @@ class Helper
     }
 
 
-    public static function translateData($data, $translate, $translateKeys = false,$language)
+    public static function translateData($data, $translate,$language,$translateKeys = false)
     {
         $str = '';
         $res = [];
@@ -139,7 +139,7 @@ class Helper
                 }
             }
         }else{
-            foreach ($data as $key => $value) {
+            foreach ($data as $value) {
                 if (isset($value['name'], $value['id'])) {
                     $str .= $value['name'] . '////' . $value['id'] . "\r\n";
                 }

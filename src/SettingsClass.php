@@ -5,7 +5,7 @@ namespace src;
 class SettingsClass
 {
     public $arrSettingLanguage = [
-        'language_ukrainian'=>[
+        'uk'=>[
             'btnTranslate'=>'Перекласти',
             // 'id' => 'Ідентифікатор',
             'title' => 'Назва',
@@ -78,7 +78,7 @@ class SettingsClass
             'skills_2_name' => 'Назва навички 3',
             'skills_2_required' => 'Потрібна навичка 3',
         ],
-        'language_russian'=>[
+        'ru'=>[
             'btnTranslate'=>'Перевести',
 //            'id' => 'Идентификатор',
             'title' => 'Название',
@@ -151,7 +151,7 @@ class SettingsClass
             'skills_2_name' => 'Название навыка 3',
             'skills_2_required' => 'Требуется навык 3',
         ],
-        'language_english'=>[
+        'en'=>[
             'btnTranslate'=>'Translate',
             'title' => 'Title',
             'description' => 'Description',
@@ -219,34 +219,32 @@ class SettingsClass
         ]
     ];
     public $arrSettingStartMenuRegion = [
-        'language_ukrainian' => [
+        'uk' => [
             'title' => 'Виберіть регіон:'
         ],
-        'language_russian'=>[
+        'ru'=>[
             'title'=>'Выберите регион:'
         ],
-        'language_english'=>[
+        'en'=>[
             'title'=>'Select a region:'
         ]
     ];
-
     public $arrSettingStartMenuSpecialist = [
-        'language_ukrainian' => [
+        'uk' => [
             'title' => 'Виберіть спеціальність:',
             'buttonTranslate'=>'Перекласти:'
         ],
-        'language_russian'=>[
+        'ru'=>[
             'title'=>'Выберите специальность:',
             'buttonTranslate'=>'Перевести:'
         ],
-        'language_english'=>[
+        'en'=>[
             'title'=>'Select specialty:',
             'buttonTranslate'=>'Translate:'
         ]
     ];
-
     public $arrSettingbuildMenuFromAds = [
-        'language_ukrainian' => [
+        'uk' => [
             'publishedDate' => 'Дата публікації:',
             'occupation' => 'Професія:',
             'workplace' => 'Місце роботи:',
@@ -255,7 +253,7 @@ class SettingsClass
             'details' => 'Детальніше',
             'Hide' => 'Приховати',
         ],
-        'language_russian'=>[
+        'ru'=>[
             'publishedDate' => 'Дата публикации:',
             'occupation' => 'Профессия:',
             'workplace' => 'Место работы:',
@@ -264,7 +262,7 @@ class SettingsClass
             'details' => 'Подробнее',
             'Hide' => 'Скрыть',
         ],
-        'language_english'=>[
+        'en'=>[
             'publishedDate' => 'Publication date:',
             'occupation' => 'Profession:',
             'workplace' => 'Place of work:',
@@ -275,56 +273,55 @@ class SettingsClass
         ]
     ];
     public $arrSettingStartMenuResult = [
-        'language_ukrainian' => [
+        'uk' => [
             'notFount' => 'На жаль, оголошень не знайдено.',
         ],
-        'language_russian'=>[
+        'ru'=>[
             'notFount'=>'К сожалению, объявлений не найдено.'
         ],
-        'language_english'=>[
+        'en'=>[
             'notFount'=>'Sorry, no advertisements found.',
         ]
     ];
     public $arrSettingStartMenu = [
-        'language_ukrainian'=>[
+        'uk'=>[
             'title'=>'Зробіть вибір ресурсів:',
             'platsbankenButton' => 'Банк локацій:',
             'webbplatserButton'=>'Зовнішні сайти:'
         ],
-        'language_russian'=>[
+        'ru'=>[
             'title'=>'Сделайте выбор ресурсов:',
             'platsbankenButton' => 'Банк локаций:',
             'webbplatserButton'=>'Внешние сайты:'
         ],
-        'language_english' =>[
+        'en' =>[
             'title'=>'Make a selection of resources:',
             'platsbankenButton' => 'Location bank',
             'webbplatserButton'=>'External sites:'
         ]
     ];
     public $arrSettingStartMenuOccupation = [
-        'language_ukrainian' => [
+        'uk' => [
             'title' => 'Виберіть напрямок:',
             'buttonTranslate'=>'Перекласти:'
         ],
-        'language_russian'=>[
+        'ru'=>[
             'title'=>'Выберите направление:',
             'buttonTranslate'=>'Перевести:'
         ],
-        'language_english'=>[
+        'en'=>[
             'title'=>'Select direction:',
             'buttonTranslate'=>'Translate:'
         ]
     ];
-
     public $arrSettingStartMenuCity = [
-        'language_ukrainian' => [
+        'uk' => [
             'title' => 'Виберіть місто:'
         ],
-        'language_russian'=>[
+        'ru'=>[
             'title'=>'Выберите город:'
         ],
-        'language_english'=>[
+        'en'=>[
             'title'=>'Select city:'
         ]
     ];

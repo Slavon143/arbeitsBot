@@ -8,32 +8,28 @@ class ArbeitsBotMenu
     public $apiTranslate;
 
     public $language;
-
+    public $telegram;
     public $db;
-
+    public $chat_id;
     public $settingArray;
 
-    public function __construct()
+    public function __construct($chat_id,$telegram,$db)
     {
         $this->apiArbeits = new ApiArbetsformedlingen();
         $this->apiTranslate = new TranslateApi();
-        $this->db = new ActionHandler(__DIR__ . '/../db/database.db');
         $this->settingArray = new SettingsClass();
+        $this->db = $db;
+        $this->telegram = $telegram;
+        $this->chat_id = $chat_id;
+        $this->language = $this->db->getLanguageChoices($this->chat_id);
     }
 
-    public function startMenu($param)
+    public function startMenu()
     {
-        $telegram = $param['telegram'];
-        $chatId = $param['chat_id'];
-        $lang = $param['lang'];
-
-        $this->db->recordLanguageChoice($chatId, $lang);
-        $this->language = $this->db->getLanguageChoices($chatId);
-
         $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
 
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
@@ -49,19 +45,15 @@ class ArbeitsBotMenu
     }
 
 
-    public function showRegion($param)
+    public function showRegion()
     {
-        $telegram = $param['telegram'];
-        $chatId = $param['chat_id'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
         $tramslateText = $this->settingArray->arrSettingStartMenuRegion[$this->language];
 
         $getLocation = $this->apiArbeits->getLocation();
 
         $buttons = [];
 
-        // Разбиваем кнопки на две колонки
         $columns = 2;
         $current_column = 0;
         $current_row = [];
@@ -70,10 +62,8 @@ class ArbeitsBotMenu
             $id = $item['id'];
             $name = $item['name'];
 
-            // Добавляем кнопку в текущую строку
             $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f' => 'showCity', 'r_id' => $id])];
 
-            // Если текущая строка достигла максимальной ширины, добавляем ее в массив кнопок и создаем новую строку
             $current_column++;
             if ($current_column >= $columns) {
                 $buttons[] = $current_row;
@@ -82,13 +72,12 @@ class ArbeitsBotMenu
             }
         }
 
-        // Если осталась неполная строка, добавляем ее в массив кнопок
         if (!empty($current_row)) {
             $buttons[] = $current_row;
         }
 
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
@@ -99,11 +88,8 @@ class ArbeitsBotMenu
     public function showSpecialist($param)
     {
         $occupation_id = $param['ok_id'];
-        $chatId = $param['chat_id'];
-        $telegram = $param['telegram'];
         $city_id = $param['c_id'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
         $tramslateText = $this->settingArray->arrSettingStartMenuSpecialist[$this->language];
 
         $occupation = $this->apiArbeits->getOccupation();
@@ -114,7 +100,7 @@ class ArbeitsBotMenu
         $current_row = [];
 
         if ($param['trans']) {
-            $occupation = Helper::translateData($occupation, $this->apiTranslate, $occupation_id, $param['trans']);
+            $occupation = Helper::translateData($occupation, $this->apiTranslate, $param['trans'],$occupation_id);
             foreach ($occupation as $item) {
                 $id = $item['id'];
                 $name = $item['name'];
@@ -150,10 +136,10 @@ class ArbeitsBotMenu
                     }
                 }
             }
-            if ($this->language == 'language_ukrainian') {
+            if ($this->language == 'uk') {
                 $flag_unicode = "🇺🇦";
                 $langParam = 'uk';
-            } elseif ($this->language == 'language_russian') {
+            } elseif ($this->language == 'ru') {
                 $flag_unicode = "🇷🇺";
                 $langParam = 'ru';
             } else {
@@ -161,15 +147,15 @@ class ArbeitsBotMenu
                 $langParam = 'en';
             }
             $buttons[] = [[
-                'text' => $flag_unicode . $tramslateText['buttonTranslate'],
+                'text' => $flag_unicode . ' ' . $tramslateText['buttonTranslate'],
                 'callback_data' => Helper::arrayToString(['f' => 'showSpecialist', 'ok_id' => $occupation_id, 'c_id' => $city_id, 'trans' => $langParam])
             ]];
         }
         if (!empty($current_row)) {
             $buttons[] = $current_row;
         }
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
@@ -179,13 +165,9 @@ class ArbeitsBotMenu
 
     public function showCity($param)
     {
-        $telegram = $param['telegram'];
         $region_id = $param['r_id'];
-        $chatId = $param['chat_id'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
         $tramslateText = $this->settingArray->arrSettingStartMenuCity[$this->language];
-
 
         $getLocation = $this->apiArbeits->getLocation();
         $buttons = [];
@@ -204,7 +186,6 @@ class ArbeitsBotMenu
                     // Добавляем кнопку в текущий ряд
                     $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'c_id' => $id])];
 
-                    // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
                     $current_column++;
                     if ($current_column >= $columns) {
                         $buttons[] = $current_row;
@@ -220,8 +201,8 @@ class ArbeitsBotMenu
             $buttons[] = $current_row;
         }
 
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
@@ -231,18 +212,17 @@ class ArbeitsBotMenu
 
     public function platsbankenShowOccupation($param)
     {
-        $telegram = $param['telegram'];
+
         $city_id = $param['c_id'];
-        $chatId = $param['chat_id'];
+
         $translate = $param['trans'];
 
-        $this->language = $this->db->getLanguageChoices($chatId);
         $tramslateText = $this->settingArray->arrSettingStartMenuOccupation[$this->language];
 
         $occupation = $this->apiArbeits->getOccupation();
         if ($translate) {
             $translateApi = new TranslateApi();
-            $occupation = Helper::translateData($occupation, $translateApi, false, $param['trans']);
+            $occupation = Helper::translateData($occupation, $translateApi,  $param['trans'],false);
         }
         $buttons = [];
 
@@ -258,7 +238,6 @@ class ArbeitsBotMenu
             // Добавляем кнопку в текущий ряд
             $current_row[] = ['text' => $name, 'callback_data' => Helper::arrayToString(['f' => 'showSpecialist', 'ok_id' => $id, 'c_id' => $city_id])];
 
-            // Если текущий ряд достиг максимальной ширины, добавляем его в массив кнопок и создаем новый ряд
             $current_column++;
             if ($current_column >= $columns) {
                 $buttons[] = $current_row;
@@ -272,10 +251,10 @@ class ArbeitsBotMenu
             $buttons[] = $current_row;
         }
         if (!$translate) {
-            if ($this->language == 'language_ukrainian') {
+            if ($this->language == 'uk') {
                 $flag_unicode = "🇺🇦";
                 $langParam = 'uk';
-            } elseif ($this->language == 'language_russian') {
+            } elseif ($this->language == 'ru') {
                 $flag_unicode = "🇷🇺";
                 $langParam = 'ru';
             } else {
@@ -283,14 +262,14 @@ class ArbeitsBotMenu
                 $langParam = 'en';
             }
             $buttons[] = [[
-                'text' => $flag_unicode . $tramslateText['buttonTranslate'],
+                'text' => $flag_unicode . ' ' . $tramslateText['buttonTranslate'],
                 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'c_id' => $city_id, 'trans' => $langParam])
 
             ]];
         }
         // Отправляем сообщение с кнопками
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
@@ -300,20 +279,11 @@ class ArbeitsBotMenu
 
     public function showResult($param)
     {
-        $chatId = $param['chat_id'];
-        $telegram = $param['telegram'];
-
         if (!empty($param['se_t'])){
             $searchText = $param['se_t'];
         }else{
             $city_id = $param['c_id'];
             $specialist_id = $param['spec_id'];
-        }
-
-        if ($this->db->getLanguageChoices($chatId)){
-            $this->language = $this->db->getLanguageChoices($chatId);
-        }else{
-            $this->language = 'language_ukrainian';
         }
 
         $tramslateText = $this->settingArray->arrSettingStartMenuResult[$this->language];
@@ -328,14 +298,14 @@ class ArbeitsBotMenu
         $numberOfAds = $getAll['numberOfAds'];
 
         if ($numberOfAds == 0) {
-            $telegram->sendMessage([
-                'chat_id' => $chatId,
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chat_id,
                 'text' => $tramslateText['notFount']
             ]);
             return;
         }
 
-        $this->buildMenuFromAds($getAll, $chatId, $telegram, $this->language);
+        $this->buildMenuFromAds($getAll, $this->chat_id, $this->telegram, $this->language);
 
         // Рассчитываем общее количество страниц
         $totalPages = ceil($numberOfAds / 5);
@@ -371,8 +341,8 @@ class ArbeitsBotMenu
                 $inlineKeyboard[] = $right_button;
             }
             // Отправляем сообщение с клавиатурой
-            $telegram->sendMessage([
-                'chat_id' => $chatId,
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chat_id,
                 'text' => 'Выберите действие:',
                 'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
             ]);
@@ -427,55 +397,39 @@ class ArbeitsBotMenu
 
     public function delMessage($param)
     {
-        $chatId = $param['chat_id'];
         $messageId = $param['message_id'];
-
-        $url = "https://api.telegram.org/bot{$_ENV['TELEGRAM_BOT_TOKEN']}/deleteMessage?chat_id={$chatId}&message_id={$messageId}";
-
+        $url = "https://api.telegram.org/bot{$_ENV['TELEGRAM_BOT_TOKEN']}/deleteMessage?chat_id={$this->chat_id}&message_id={$messageId}";
         $ch = curl_init();
 
-        // Установка URL и других нужных параметров
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        // Выполнение запроса, получение ответа и закрытие сессии
         curl_exec($ch);
         curl_close($ch);
     }
 
     public function showOne($param)
     {
-        $telegram = $param['telegram'];
-        $chatId = $param['chat_id'];
+
         $key_board = $param['detail_id'];
-
-        if ($this->db->getLanguageChoices($chatId)){
-            $this->language = $this->db->getLanguageChoices($chatId);
-        }else{
-            $this->language = 'language_ukrainian';
-        }
-
         $tramslateText = $this->settingArray->arrSettingLanguage[$this->language];
-
         $ad = $this->apiArbeits->getOne($key_board);
-
         $str = Helper::processJobData($ad, $tramslateText);
-
         if ($param['trans']) {
             $str = $this->apiTranslate->translate($str,$param['trans']);
             $str = strip_tags($str);
         }
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
             'text' => $str,
             'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
         ]);
 
         if (!$param['trans']) {
-            if ($this->language == 'language_ukrainian') {
+            if ($this->language == 'uk') {
                 $flag_unicode = "🇺🇦";
                 $langParam = 'uk';
-            } elseif ($this->language == 'language_russian') {
+            } elseif ($this->language == 'ru') {
                 $flag_unicode = "🇷🇺";
                 $langParam = 'ru';
             } else {
@@ -483,8 +437,8 @@ class ArbeitsBotMenu
                 $langParam = 'en';
             }
 
-            $telegram->sendMessage([
-                'chat_id' => $chatId,
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chat_id,
                 'text' => $flag_unicode . $tramslateText['btnTranslate'],
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
@@ -497,26 +451,30 @@ class ArbeitsBotMenu
         }
     }
 
-    function sendLanguageMenu($telegram, $chatId)
+    function sendLanguageMenu()
     {
-        $ukrainian_flag_unicode = "🇺🇦"; // Unicode символ для украинского флага
-        $russian_flag_unicode = "🇷🇺"; // Unicode символ для российского флага
-        $english_flag_unicode = "🇬🇧"; // Unicode символ для английского флага
+        $ukrainianFlagUnicode = "🇺🇦";
+        $russianFlagUnicode = "🇷🇺";
+        $englishFlagUnicode = "🇬🇧";
 
-        $telegram->sendMessage([
-            'chat_id' => $chatId,
-            'text' => 'Выберите язык:',
-            'reply_markup' => json_encode([
-                'inline_keyboard' => [
-                    [
-                        ['text' => $ukrainian_flag_unicode . ' Українська', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'language_ukrainian'])],
-                        ['text' => $russian_flag_unicode . ' Русский', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'language_russian'])],
-                        ['text' => $english_flag_unicode . ' English', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'language_english'])]
+        // Проверяем, установлен ли chat_id
+        if ($this->chat_id) {
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chat_id,
+                'text' => 'Выберите язык:',
+                'reply_markup' => json_encode([
+                    'inline_keyboard' => [
+                        [
+                            ['text' => $ukrainianFlagUnicode . ' Українська', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'uk'])],
+                            ['text' => $russianFlagUnicode . ' Русский', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'ru'])],
+                            ['text' => $englishFlagUnicode . ' English', 'callback_data' => Helper::arrayToString(['f' => 'startMenu', 'lang' => 'en'])]
+                        ]
                     ]
-                ]
-            ]),
-        ]);
+                ]),
+            ]);
+        } else {
+            // Обработка ошибки, например, вывод в лог или отправка уведомления
+            error_log('Invalid chat_id: ' . $this->chat_id);
+        }
     }
-
-
 }
