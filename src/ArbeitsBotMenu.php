@@ -24,10 +24,13 @@ class ArbeitsBotMenu
         $this->language = $this->db->getLanguageChoices($this->chat_id);
     }
 
-    public function startMenu()
+    public function startMenu($lang = false)
     {
-        $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
-
+        if ($lang){
+            $tramslateText = $this->settingArray->arrSettingStartMenu[$lang];
+        }else{
+            $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
+        }
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
