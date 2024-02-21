@@ -79,6 +79,7 @@ class ArbeitsTelegramBot
                 $this->actionHandler->removeLastAction($this->chat_id);
                 break;
             default:
+                $this->menu->showResult(['se_t'=>$message['text']]);
                 break;
         }
     }

@@ -13,7 +13,7 @@ class ArbeitsBotMenu
     public $chat_id;
     public $settingArray;
 
-    public function __construct($chat_id,$telegram,$db)
+    public function __construct($chat_id, $telegram, $db)
     {
         $this->apiArbeits = new ApiArbetsformedlingen();
         $this->apiTranslate = new TranslateApi();
@@ -100,7 +100,7 @@ class ArbeitsBotMenu
         $current_row = [];
 
         if ($param['trans']) {
-            $occupation = Helper::translateData($occupation, $this->apiTranslate, $param['trans'],$occupation_id);
+            $occupation = Helper::translateData($occupation, $this->apiTranslate, $param['trans'], $occupation_id);
             foreach ($occupation as $item) {
                 $id = $item['id'];
                 $name = $item['name'];
@@ -222,7 +222,7 @@ class ArbeitsBotMenu
         $occupation = $this->apiArbeits->getOccupation();
         if ($translate) {
             $translateApi = new TranslateApi();
-            $occupation = Helper::translateData($occupation, $translateApi,  $param['trans'],false);
+            $occupation = Helper::translateData($occupation, $translateApi, $param['trans'], false);
         }
         $buttons = [];
 
@@ -279,21 +279,21 @@ class ArbeitsBotMenu
 
     public function showResult($param)
     {
-        if (!empty($param['se_t'])){
+        if (!empty($param['se_t'])) {
             $searchText = $param['se_t'];
-        }else{
+            $searchText = $this->apiTranslate->translate($searchText, true);
+            $searchText = strip_tags($searchText);
+        } else {
             $city_id = $param['c_id'];
             $specialist_id = $param['spec_id'];
         }
-
         $tramslateText = $this->settingArray->arrSettingStartMenuResult[$this->language];
-
         if (isset($param['st_index'])) {
             $startIndex = $param['st_index'];
         } else {
             $startIndex = 0;
         }
-        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id,$searchText);
+        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id, $searchText);
 
         $numberOfAds = $getAll['numberOfAds'];
 
@@ -307,21 +307,18 @@ class ArbeitsBotMenu
 
         $this->buildMenuFromAds($getAll, $this->chat_id, $this->telegram, $this->language);
 
-        // Рассчитываем общее количество страниц
         $totalPages = ceil($numberOfAds / 5);
-
-        // Если всего одна страница, не добавляем кнопки навигации вперед/назад
         if ($totalPages == 1) {
             $inlineKeyboard = [];
         } else {
             // Создаем кнопки
             $inlineKeyboard = [];
 
-            if (!empty($searchText)){
-                $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'se_t'=>$searchText])];
-                $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5,'se_t'=>$searchText])];
+            if (!empty($searchText)) {
+                $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'se_t' => $searchText])];
+                $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5, 'se_t' => $searchText])];
 
-            }else{
+            } else {
                 $left_button = ['text' => '←', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex - 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
                 $right_button = ['text' => '→', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'st_index' => $startIndex + 5, 'spec_id' => $specialist_id, 'c_id' => $city_id])];
 
@@ -416,7 +413,7 @@ class ArbeitsBotMenu
         $ad = $this->apiArbeits->getOne($key_board);
         $str = Helper::processJobData($ad, $tramslateText);
         if ($param['trans']) {
-            $str = $this->apiTranslate->translate($str,$param['trans']);
+            $str = $this->apiTranslate->translate($str, $param['trans']);
             $str = strip_tags($str);
         }
         $this->telegram->sendMessage([
