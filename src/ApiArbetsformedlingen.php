@@ -48,6 +48,7 @@ class ApiArbetsformedlingen
                 "value" => $param['se_t']
             ];
         }
+
         $requestData = [
             "filters" => $filters,
             "fromDate" => null,

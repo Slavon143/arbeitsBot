@@ -342,7 +342,7 @@ class ArbeitsBotMenu
             return; // Не выводим клавиатуру, так как нет результатов
         }
 
-        $this->buildMenuFromAds($getAll, $this->chat_id, $this->telegram, $this->language);
+        $this->buildMenuFromAds($getAll);
 
         $totalPages = ceil($numberOfAds / 5);
 
@@ -377,7 +377,7 @@ class ArbeitsBotMenu
         }
     }
 
-    public function buildMenuFromAds($ads, $chatId, $objTelegram, $language)
+    public function buildMenuFromAds($ads)
     {
         $tramslateText = $this->settingArray->arrSettingbuildMenuFromAds['sv'];
 
@@ -415,8 +415,8 @@ class ArbeitsBotMenu
             ];
 
             // Отправляем сообщение с полной информацией об объявлении и кнопкой "Подробнее" и "Скрыть"
-            $objTelegram->sendMessage([
-                'chat_id' => $chatId,
+            $this->telegram->sendMessage([
+                'chat_id' => $this->chat_id,
                 'text' => $messageText,
                 'reply_markup' => json_encode(['inline_keyboard' => [$menu]]),
                 'parse_mode' => 'HTML',
