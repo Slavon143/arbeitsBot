@@ -253,6 +253,7 @@ class ArbeitsBotMenu
                     $row = [];
                 }
             }
+            $buttons[] = [['text' => 'Show all', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'spec_all' => $occupation_id]+$location)]];
         } else {
             foreach ($occupation as $item) {
                 if ($item['id'] == $occupation_id) {
