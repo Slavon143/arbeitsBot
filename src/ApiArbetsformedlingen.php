@@ -16,36 +16,44 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
-    public function showAll($startIndex, $cityId, $profession_id,$resource,$searchText=null) {
+    public function showAll($startIndex,$resource,$param) {
         $filters = [];
-
-        if ($cityId !== null) {
+        if (isset($param['c_id'])) {
             $filters[] = [
                 "type" => "municipality",
-                "value" => "$cityId"
+                "value" => $param['c_id']
             ];
         }
-
-        if ($profession_id !== null) {
+        if (isset($param['spec_all'])) {
+            $filters[] = [
+                "type" => "occupationField",
+                "value" => $param['spec_all']
+            ];
+        }
+        if (isset($param['r_id'])) {
+            $filters[] = [
+                "type" => "region",
+                "value" => $param['r_id']
+            ];
+        }
+        if (isset($param['spec_id'])) {
             $filters[] = [
                 "type" => "occupationGroup",
-                "value" => "$profession_id"
+                "value" => $param['spec_id']
             ];
         }
-        if ($searchText != null){
+        if (isset($param['se_t'])){
             $filters[] = [
                 "type" => "freetext",
-                "value" => "$searchText"
+                "value" => $param['se_t']
             ];
         }
-
         $requestData = [
             "filters" => $filters,
             "fromDate" => null,
             "order" => "relevance",
             "maxRecords" => 5,
             "startIndex" => $startIndex,
-            "toDate" => "2024-02-12T16:18:18.032Z",
             "source" => $resource
         ];
 
@@ -54,8 +62,6 @@ class ApiArbetsformedlingen
         $getAll = json_decode($getAll, true);
 
         return $getAll;
-
-        return $jsonRequestData;
     }
 
     public function getOne($id,$resource){

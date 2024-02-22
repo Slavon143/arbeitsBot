@@ -88,6 +88,17 @@ class Helper
 
     }
 
+    public static function getFlag($language){
+        $flag_unicode = '';
+        if ($language == 'uk') {
+            $flag_unicode = "🇺🇦";
+        } elseif ($language == 'ru') {
+            $flag_unicode = "🇷🇺";
+        } else {
+            $flag_unicode = "🇬🇧";
+        }
+        return $flag_unicode;
+    }
 
     public static function occupationDataTranslate($array, $translete)
     {
