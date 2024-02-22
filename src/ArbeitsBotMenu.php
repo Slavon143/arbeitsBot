@@ -358,10 +358,10 @@ class ArbeitsBotMenu
 
     public function buildMenuFromAds($ads, $chatId, $objTelegram, $language)
     {
-        $tramslateText = $this->settingArray->arrSettingbuildMenuFromAds[$language];
+        $tramslateText = $this->settingArray->arrSettingbuildMenuFromAds['sv'];
 
         foreach ($ads['ads'] as $ad) {
-            // Создаем текст сообщения с полной информацией об объявлении
+
             $title = $ad['title'];
             $publishedDate = $ad['publishedDate'];
             $occupation = $ad['occupation'];
@@ -378,17 +378,27 @@ class ArbeitsBotMenu
 
             // Создаем текст сообщения
             $messageText = "<b>$title</b>\n$additionalInfo";
+            if ($this->language == 'uk') {
+                $flag_unicode = "🇺🇦";
+                $langParam = 'uk';
+            } elseif ($this->language == 'ru') {
+                $flag_unicode = "🇷🇺";
+                $langParam = 'ru';
+            } else {
+                $flag_unicode = "🇬🇧";
+                $langParam = 'en';
+            }
 
-            // Формируем кнопку "Подробнее" и кнопку "Скрыть" для каждого объявления
             $menu = [
                 [
-                    'text' => '⏬ ' . $tramslateText['details'],
+                    'text' => '⏬ ' . $this->settingArray->arrSettingbuildMenuFromAds[$this->language]['details'],
                     'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $ad['id']]),
                 ],
                 [
-                    'text' => $tramslateText['Hide'],
+                    'text' => $this->settingArray->arrSettingbuildMenuFromAds[$this->language]['Hide'],
                     'callback_data' => Helper::arrayToString(['f' => 'delMessage']),
-                ]
+                ],
+                ['text' => $flag_unicode . $this->settingArray->btnTranslate[$this->language]['trans'], 'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $ad['id'], 'trans' => $this->language])]
             ];
 
             // Отправляем сообщение с полной информацией об объявлении и кнопкой "Подробнее" и "Скрыть"
@@ -419,7 +429,7 @@ class ArbeitsBotMenu
         $resource = $this->db->getResourceChoices($this->chat_id);
 
         $key_board = $param['detail_id'];
-        $tramslateText = $this->settingArray->arrSettingLanguage[$this->language];
+        $tramslateText = $this->settingArray->arrSettingLanguage['sv'];
 
         $ad = $this->apiArbeits->getOne($key_board, $resource);
 
@@ -445,12 +455,12 @@ class ArbeitsBotMenu
         $menu = [];
         if (!$param['trans']) {
             $menu[] = [
-                ['text' => $flag_unicode . $tramslateText['btnTranslate'], 'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $key_board, 'trans' => $langParam])],
-                ['text' => $this->settingArray->btnTranslate[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
+                ['text' => $flag_unicode . $this->settingArray->btnTranslate[$this->language]['trans'], 'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $key_board, 'trans' => $langParam])],
+                ['text' => $this->settingArray->btnHide[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
             ];
         } else {
             $menu[] = [
-                ['text' => $this->settingArray->btnTranslate[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
+                ['text' => $this->settingArray->btnHide[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
             ];
         }
 
