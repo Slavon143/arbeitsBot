@@ -434,4 +434,16 @@ class SettingsClass
             'title'=>'Select city:'
         ]
     ];
+
+    public $btnSendLanguageMenu = [
+        'uk'=>[
+            'chooseLanguage'=>'Виберіть мову'
+        ],
+        'ru'=>[
+            'chooseLanguage' => 'Выберите язык'
+        ],
+        'en'=>[
+            'chooseLanguage'=>'Choose language'
+        ],
+    ];
 }

@@ -24,13 +24,32 @@ class ArbeitsBotMenu
         $this->language = $this->db->getLanguageChoices($this->chat_id);
     }
 
-    public function startMenu($lang = false)
+    public function nawMenu(){
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
+            'text' => 'Start',
+            'reply_markup' => json_encode([
+                'keyboard' => [
+                    [
+                        ['text' => '🔙 Back'],
+                        ['text' => '🏠 Home'],
+                        ['text' => '🌐 Language'],
+                    ],
+                ],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => true
+            ])
+        ]);
+    }
+
+    public function startMenu($data)
     {
-        if ($lang) {
-            $tramslateText = $this->settingArray->arrSettingStartMenu[$lang];
-        } else {
+        if (isset($data)){
+            $tramslateText = $this->settingArray->arrSettingStartMenu[$data];
+        }else{
             $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
         }
+        $this->nawMenu();
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
             'text' => $tramslateText['title'],
@@ -478,11 +497,16 @@ class ArbeitsBotMenu
         $russianFlagUnicode = "🇷🇺";
         $englishFlagUnicode = "🇬🇧";
 
-        // Проверяем, установлен ли chat_id
+        if ($this->language){
+            $chooseLanguage = $this->settingArray->btnSendLanguageMenu[$this->language]['chooseLanguage'];
+        }else{
+            $chooseLanguage = $this->settingArray->btnSendLanguageMenu['ru']['chooseLanguage'];
+        }
+
         if ($this->chat_id) {
             $this->telegram->sendMessage([
                 'chat_id' => $this->chat_id,
-                'text' => 'Выберите язык:',
+                'text' => $chooseLanguage,
                 'reply_markup' => json_encode([
                     'inline_keyboard' => [
                         [

@@ -37,11 +37,9 @@ class ArbeitsTelegramBot
 
         if (!$this->actionHandler->getLanguageChoices($this->chat_id)) {
             if ($callbackQuery) {
-
                 $selectedLanguage = Helper::stringToArray($callbackQuery['data']);
                 $this->actionHandler->recordLanguageChoice($this->chat_id, $selectedLanguage['lang']);
-                $lang = $this->actionHandler->getLanguageChoices($this->chat_id);
-                $this->menu->startMenu($lang);
+                $this->menu->startMenu($selectedLanguage['lang']);
             } else {
                 $this->menu->sendLanguageMenu();
             }
@@ -49,7 +47,8 @@ class ArbeitsTelegramBot
             if ($callbackQuery) {
                 if (isset(Helper::stringToArray($callbackQuery['data'])['lang'])) {
                     $this->actionHandler->recordLanguageChoice($this->chat_id, Helper::stringToArray($callbackQuery['data'])['lang']);
-                    $this->menu->startMenu(Helper::stringToArray($callbackQuery['data'])['lang']);
+                    $selectedLanguage = Helper::stringToArray($callbackQuery['data']);
+                    $this->menu->startMenu($selectedLanguage['lang']);
                 }
                 $this->handleCallbackQuery($callbackQuery);
             } else {
@@ -63,20 +62,18 @@ class ArbeitsTelegramBot
         $messageText = $message['text'];
         switch ($messageText) {
             case '/start':
+                $this->actionHandler->removeHistoryFile($this->chat_id);
                 break;
-            case '/changelanguage':
+            case '🌐 Language':
                 $this->menu->sendLanguageMenu();
                 break;
-            case '/home':
+            case '🏠 Home':
                 $this->actionHandler->removeHistoryFile($this->chat_id);
-                $this->menu->startMenu(false);
+                $this->menu->startMenu('ru');
                 break;
-            case '/back':
+            case '🔙 Back':
                 $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
-                $previousAction['telegram'] = $this->telegram;
-                $previousAction['chat_id'] = $this->chat_id;
                 $previousAction['message_id'] = $message['message_id'];
-
                 call_user_func([$this->menu, $previousAction['f']], $previousAction);
                 $this->actionHandler->removeLastAction($this->chat_id);
                 break;
@@ -96,7 +93,6 @@ class ArbeitsTelegramBot
             $methodName = $callbackData['f'];
 
             $this->actionHandler->addToHistory($this->chat_id, $callbackData);
-            // Вызов метода с передачей параметров
 
             $callbackData['message_id'] = $callbackQuery['message']['message_id'];
             call_user_func([$menu, $methodName], $callbackData);
@@ -110,8 +106,6 @@ class ArbeitsTelegramBot
         } elseif ($update && isset($update['callback_query']['message']['chat']['id'])) {
             return $update['callback_query']['message']['chat']['id'];
         }
-
-        // Возвращаем значение по умолчанию (может потребоваться в вашем случае)
         return null;
     }
 }
