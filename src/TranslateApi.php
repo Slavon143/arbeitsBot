@@ -17,6 +17,8 @@ class TranslateApi
 
     public function translate($text, $language, $languageSe = false)
     {
+
+
         // Кодируем текст для URL
         $encoded_text = urlencode($text);
 
@@ -56,7 +58,7 @@ class TranslateApi
 
         // Выполняем запрос и получаем ответ
         $response = curl_exec($curl);
-
+        Helper::debug($response);
         // Проверяем на наличие ошибок
         if (curl_errno($curl)) {
             echo 'Ошибка cURL: ' . curl_error($curl);

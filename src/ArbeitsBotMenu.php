@@ -37,8 +37,8 @@ class ArbeitsBotMenu
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $tramslateText['platsbankenButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion'])],
-                        ['text' => $tramslateText['webbplatserButton'], 'callback_data' => 'webbplatser'],
+                        ['text' => $tramslateText['platsbankenButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion','resource'=>'pb'])],
+                        ['text' => $tramslateText['webbplatserButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion','resource'=>'joblinks'])],
                     ]
                 ],
                 'resize_keyboard' => true,
@@ -48,9 +48,11 @@ class ArbeitsBotMenu
     }
 
 
-    public function showRegion()
+    public function showRegion($param)
     {
-
+        if (isset($param['resource'])){
+            $this->db->recordResourceChoice($this->chat_id,$param['resource']);
+        }
         $tramslateText = $this->settingArray->arrSettingStartMenuRegion[$this->language];
 
         $getLocation = $this->apiArbeits->getLocation();
@@ -282,6 +284,11 @@ class ArbeitsBotMenu
 
     public function showResult($param)
     {
+        $resource = $this->db->getResourceChoices($this->chat_id);
+
+        if (!$resource){
+            $resource = 'pb';
+        }
         if (!empty($param['se_t'])) {
             $searchText = $param['se_t'];
             $searchText = $this->apiTranslate->translate($searchText, '',true);
@@ -296,7 +303,8 @@ class ArbeitsBotMenu
         } else {
             $startIndex = 0;
         }
-        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id, $searchText);
+
+        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id,$resource, $searchText);
 
         $numberOfAds = $getAll['numberOfAds'];
 
@@ -409,13 +417,17 @@ class ArbeitsBotMenu
 
     public function showOne($param)
     {
+        $resource = $this->db->getResourceChoices($this->chat_id);
 
         $key_board = $param['detail_id'];
         $tramslateText = $this->settingArray->arrSettingLanguage[$this->language];
-        $ad = $this->apiArbeits->getOne($key_board);
+
+        $ad = $this->apiArbeits->getOne($key_board,$resource);
+
         $str = Helper::processJobData($ad, $tramslateText);
+
         if ($param['trans']) {
-            $str = $this->apiTranslate->translate($str, $param['trans']);
+            $str = $this->apiTranslate->translate($str, $this->language,false);
             $str = strip_tags($str);
         }
         $this->telegram->sendMessage([

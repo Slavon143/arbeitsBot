@@ -6,9 +6,11 @@ class SettingsClass
 {
     public $arrSettingLanguage = [
         'uk'=>[
+            'title' => 'Назва',
+            'sourceLinks_0_label'=>'Назва веб-сайту',
+            'sourceLinks_0_url'=>'Оголошення повністю читайте тут',
             'btnTranslate'=>'Перекласти',
             // 'id' => 'Ідентифікатор',
-            'title' => 'Назва',
             'description' => 'Опис',
             'publishedDate' => 'Дата публікації',
             'occupation' => 'Рід занять',
@@ -79,9 +81,12 @@ class SettingsClass
             'skills_2_required' => 'Потрібна навичка 3',
         ],
         'ru'=>[
+            'title' => 'Название',
+            'sourceLinks_0_label'=>'Название веб-сайта',
+            'sourceLinks_0_url'=>'Объявление полностью читайте здесь',
             'btnTranslate'=>'Перевести',
 //            'id' => 'Идентификатор',
-            'title' => 'Название',
+
             'description' => 'Описание',
             'publishedDate' => 'Дата публикации',
             'occupation' => 'Род занятий',
@@ -152,8 +157,10 @@ class SettingsClass
             'skills_2_required' => 'Требуется навык 3',
         ],
         'en'=>[
-            'btnTranslate'=>'Translate',
             'title' => 'Title',
+            'sourceLinks_0_label'=>'Website name',
+            'sourceLinks_0_url'=>'Read the full announcement here',
+            'btnTranslate'=>'Translate',
             'description' => 'Description',
             'publishedDate' => 'Published Date',
             'occupation' => 'Occupation',

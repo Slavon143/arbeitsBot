@@ -16,7 +16,7 @@ class ApiArbetsformedlingen
         $this->platsbanken_api_url = $_ENV['PLATS_URL'];
     }
 
-    public function showAll($startIndex, $cityId, $profession_id,$searchText=null) {
+    public function showAll($startIndex, $cityId, $profession_id,$resource,$searchText=null) {
         $filters = [];
 
         if ($cityId !== null) {
@@ -46,7 +46,7 @@ class ApiArbetsformedlingen
             "maxRecords" => 5,
             "startIndex" => $startIndex,
             "toDate" => "2024-02-12T16:18:18.032Z",
-            "source" => "pb"
+            "source" => $resource
         ];
 
         $getAll = $this->makeApiRequest($this->platsbanken_api_url.'search', $requestData);
@@ -58,11 +58,13 @@ class ApiArbetsformedlingen
         return $jsonRequestData;
     }
 
-
-    public function getOne($id){
-        $request = $this->makeApiRequest($this->platsbanken_api_url."job/$id");
-
-        $request = json_decode($request,1);
+    public function getOne($id,$resource){
+        if ($resource == 'pb'){
+            $request = $this->makeApiRequest($this->platsbanken_api_url."job/$id");
+        }else{
+            $request = $this->makeApiRequest($this->platsbanken_api_url."job/$resource/$id");
+        }
+        $request = json_decode($request,true);
 
         return $request;
     }

@@ -17,6 +17,10 @@ class ActionHandler {
                         chat_id TEXT PRIMARY KEY,
                         lang TEXT
                     )');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user_resource (
+                        chat_id TEXT PRIMARY KEY,
+                        resource TEXT
+                    )');
     }
 
     public function addToHistory($chatId, $action) {
@@ -52,6 +56,19 @@ class ActionHandler {
         $stmt->execute();
     }
 
+    public function recordResourceChoice($chatId, $resource) {
+        $stmt = $this->db->prepare('INSERT OR REPLACE INTO user_resource (chat_id, resource) VALUES (:chatId, :resource)');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $stmt->bindValue(':resource', $resource, SQLITE3_TEXT);
+        $stmt->execute();
+    }
+    public function getResourceChoices($chatId) {
+        $stmt = $this->db->prepare('SELECT resource FROM user_resource WHERE chat_id = :chatId');
+        $stmt->bindValue(':chatId', $chatId, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        $row = $result->fetchArray(SQLITE3_ASSOC);
+        return ($row !== false) ? $row['resource'] : null;
+    }
     // Метод получения языка пользователя по chat_id
     public function getLanguageChoices($chatId) {
         $stmt = $this->db->prepare('SELECT lang FROM user_languages WHERE chat_id = :chatId');
