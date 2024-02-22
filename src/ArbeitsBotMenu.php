@@ -284,7 +284,7 @@ class ArbeitsBotMenu
     {
         if (!empty($param['se_t'])) {
             $searchText = $param['se_t'];
-            $searchText = $this->apiTranslate->translate($searchText, true);
+            $searchText = $this->apiTranslate->translate($searchText, '',true);
             $searchText = strip_tags($searchText);
         } else {
             $city_id = $param['c_id'];
@@ -330,7 +330,6 @@ class ArbeitsBotMenu
             if ($startIndex > 0) {
                 $inlineKeyboard[] = $left_button;
             }
-
             // Добавляем кнопку со страницами
             $currentPage = $startIndex / 5 + 1; // Рассчитываем номер текущей страницы
             $page_button = ['text' => $currentPage . '/' . $totalPages, 'callback_data' => 'None'];
