@@ -26,9 +26,9 @@ class ArbeitsBotMenu
 
     public function startMenu($lang = false)
     {
-        if ($lang){
+        if ($lang) {
             $tramslateText = $this->settingArray->arrSettingStartMenu[$lang];
-        }else{
+        } else {
             $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
         }
         $this->telegram->sendMessage([
@@ -37,8 +37,8 @@ class ArbeitsBotMenu
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $tramslateText['platsbankenButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion','resource'=>'pb'])],
-                        ['text' => $tramslateText['webbplatserButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion','resource'=>'joblinks'])],
+                        ['text' => $tramslateText['platsbankenButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'pb'])],
+                        ['text' => $tramslateText['webbplatserButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'joblinks'])],
                     ]
                 ],
                 'resize_keyboard' => true,
@@ -50,8 +50,8 @@ class ArbeitsBotMenu
 
     public function showRegion($param)
     {
-        if (isset($param['resource'])){
-            $this->db->recordResourceChoice($this->chat_id,$param['resource']);
+        if (isset($param['resource'])) {
+            $this->db->recordResourceChoice($this->chat_id, $param['resource']);
         }
         $tramslateText = $this->settingArray->arrSettingStartMenuRegion[$this->language];
 
@@ -286,12 +286,12 @@ class ArbeitsBotMenu
     {
         $resource = $this->db->getResourceChoices($this->chat_id);
 
-        if (!$resource){
+        if (!$resource) {
             $resource = 'pb';
         }
         if (!empty($param['se_t'])) {
             $searchText = $param['se_t'];
-            $searchText = $this->apiTranslate->translate($searchText, '',true);
+            $searchText = $this->apiTranslate->translate($searchText, '', true);
             $searchText = strip_tags($searchText);
         } else {
             $city_id = $param['c_id'];
@@ -304,7 +304,7 @@ class ArbeitsBotMenu
             $startIndex = 0;
         }
 
-        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id,$resource, $searchText);
+        $getAll = $this->apiArbeits->showAll($startIndex, $city_id, $specialist_id, $resource, $searchText);
 
         $numberOfAds = $getAll['numberOfAds'];
 
@@ -313,7 +313,6 @@ class ArbeitsBotMenu
                 'chat_id' => $this->chat_id,
                 'text' => $tramslateText['notFount']
             ]);
-            return;
         }
 
         $this->buildMenuFromAds($getAll, $this->chat_id, $this->telegram, $this->language);
@@ -422,19 +421,14 @@ class ArbeitsBotMenu
         $key_board = $param['detail_id'];
         $tramslateText = $this->settingArray->arrSettingLanguage[$this->language];
 
-        $ad = $this->apiArbeits->getOne($key_board,$resource);
+        $ad = $this->apiArbeits->getOne($key_board, $resource);
 
         $str = Helper::processJobData($ad, $tramslateText);
 
         if ($param['trans']) {
-            $str = $this->apiTranslate->translate($str, $this->language,false);
+            $str = $this->apiTranslate->translate($str, $this->language, false);
             $str = strip_tags($str);
         }
-        $this->telegram->sendMessage([
-            'chat_id' => $this->chat_id,
-            'text' => $str,
-            'parse_mode' => 'HTML', // Это для того, чтобы текст интерпретировался как HTML
-        ]);
 
         if (!$param['trans']) {
             if ($this->language == 'uk') {
@@ -447,19 +441,25 @@ class ArbeitsBotMenu
                 $flag_unicode = "🇬🇧";
                 $langParam = 'en';
             }
-
-            $this->telegram->sendMessage([
-                'chat_id' => $this->chat_id,
-                'text' => $flag_unicode . $tramslateText['btnTranslate'],
-                'reply_markup' => json_encode([
-                    'inline_keyboard' => [
-                        [
-                            ['text' => $flag_unicode . $tramslateText['btnTranslate'], 'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $key_board, 'trans' => $langParam])]
-                        ]
-                    ]
-                ]),
-            ]);
         }
+        $menu = [];
+        if (!$param['trans']) {
+            $menu[] = [
+                ['text' => $flag_unicode . $tramslateText['btnTranslate'], 'callback_data' => Helper::arrayToString(['f' => 'showOne', 'detail_id' => $key_board, 'trans' => $langParam])],
+                ['text' => $this->settingArray->btnTranslate[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
+            ];
+        } else {
+            $menu[] = [
+                ['text' => $this->settingArray->btnTranslate[$this->language]['Hide'], 'callback_data' => Helper::arrayToString(['f' => 'delMessage'])]
+            ];
+        }
+
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
+            'text' => $str,
+            'parse_mode' => 'HTML',
+            'reply_markup' => json_encode(['inline_keyboard' => $menu]),
+        ]);
     }
 
     function sendLanguageMenu()

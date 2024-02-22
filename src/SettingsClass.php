@@ -250,6 +250,18 @@ class SettingsClass
             'buttonTranslate'=>'Translate:'
         ]
     ];
+
+    public $btnTranslate = [
+        'uk' =>[
+            'Hide' => 'Приховати'
+        ],
+        'ru' =>[
+            'Hide' => 'Скрыть'
+        ],
+        'en' =>[
+            'Hide' => 'Hide'
+        ],
+    ];
     public $arrSettingbuildMenuFromAds = [
         'uk' => [
             'publishedDate' => 'Дата публікації:',
