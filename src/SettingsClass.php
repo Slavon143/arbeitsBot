@@ -392,6 +392,92 @@ class SettingsClass
             'notFount'=>'Sorry, no advertisements found.',
         ]
     ];
+
+    public $arrSuggestSetting = [
+        'uk' => [
+            'suggestMessage' => '
+            Ласкаво просимо до допомоги бота з пошуку роботи!
+            
+   Цей бот інтегрований з API сайту Arbetsförmedlingen (https://arbetsformedlingen.se/) та надає зручний 
+   спосіб пошуку вакансій на трьох мовах: російській, українській та англійській.
+                                
+   1. **Вибір мови:**
+     - Розпочніть з вибору мови, на якій ви хочете використовувати бота.
+     - Використовуйте кнопку "Вибрати мову" у меню.
+   2. **Пошук вакансій:**
+     - Ви можете шукати вакансії за регіонами, містами, спеціальностями або просто відправивши повідомлення з вашим запитом.
+     - Використовуйте кнопки для вибору регіону, міста та спеціальності.
+   3. **Автоматичне розпізнавання мови:**
+     - Бот автоматично визначить мову введеного вами запиту і виведе результати на екран.
+   4. **Розробник:**
+     - Якщо у вас є питання, пропозиції чи проблеми, звертайтеся до розробника бота.
+     - Ім"я розробника: В"ячеслав Стовпяга
+     - Контакт: vaceslavstovpaga@gmail.com
+   5. **Відправлення пропозицій:**
+     - Ми цінуємо вашу думку! Якщо у вас є пропозиції з поліпшення бота, відправте їх розробнику.
+     - Використовуйте команду /suggest [ваша пропозиція] для відправки пропозиції.
+   6. **Довідкова інформація:**
+     - Для отримання додаткової інформації щодо команд використовуйте /help у будь-який момент.
+     Дякуємо за використання нашого бота пошуку роботи! Бажаємо успіху у пошуку вашої ідеальної вакансії!
+'
+        ],
+        'ru' => [
+            'suggestMessage' => '
+            
+            Добро пожаловать в помощь бота по поиску работы!
+
+        Этот бот интегрирован с API сайта Arbetsförmedlingen (https://arbetsformedlingen.se/) и предоставляет удобный 
+        способ искать вакансии на трех языках: русском, украинском и английском.
+        
+        1. **Выбор языка:**
+           - Начните с выбора языка, на котором вы хотите использовать бота.
+           - Используйте кнопку "Выбрать язык" в меню.
+        2. **Поиск вакансий:**
+           - Вы можете искать вакансии по регионам, городам, специальностям или просто отправив сообщение с вашим запросом.
+           - Используйте кнопки для выбора региона, города и специальности.
+        3. **Автоматическое распознавание языка:**
+           - Бот автоматически определит язык введенного вами запроса и выведет результаты на экран.
+        4. **Разработчик:**
+           - Если у вас есть вопросы, предложения или проблемы, обращайтесь к разработчику бота.
+           - Имя разработчика: Vjacheslav Stovpiaha
+           - Контакт: vaceslavstovpaga@gmail.com
+        5. **Отправка предложений:**
+           - Мы ценим ваше мнение! Если у вас есть предложения по улучшению бота, отправьте их разработчику.
+           - Используйте команду /suggest [ваше предложение] для отправки предложения.
+        6. **Справочная информация:**
+           - Для получения дополнительной справки по командам используйте /help в любой момент.
+        
+        Спасибо за использование нашего бота по поиску работы! Удачи в поиске вашей идеальной вакансии!
+'
+        ],
+        'en' => [
+            'suggestMessage' => '
+            Welcome to the job search bot!
+
+    This bot is integrated with the API of the Arbetsförmedlingen website (https://arbetsformedlingen.se/) and provides a convenient way to
+    search for vacancies in three languages: Russian, Ukrainian, and English.
+
+    Language selection:
+        Start by choosing the language you want to use the bot in.
+        Use the "Select Language" button in the menu.
+    Job search:
+        You can search for vacancies by regions, cities, specialties, or simply by sending a message with your query.
+        Use the buttons to select the region, city, and specialty.
+    Automatic language recognition:
+        The bot will automatically detect the language of your input and display the results on the screen.
+    Developer:
+        If you have questions, suggestions, or issues, contact the bot developer.
+        Developer"s name: Vjacheslav Stovpiaha
+        Contact: vaceslavstovpaga@gmail.com
+    Submitting suggestions:
+        We value your opinion! If you have suggestions to improve the bot, send them to the developer.
+        Use the command /suggest [your suggestion] to submit a suggestion.
+    Help information:
+        For additional command assistance, use /help at any time.
+    Thank you for using our job search bot! Good luck in finding your perfect job!
+            '
+        ],
+    ];
     public $arrSettingStartMenu = [
         'uk'=>[
             'title'=>'Зробіть вибір ресурсів:',

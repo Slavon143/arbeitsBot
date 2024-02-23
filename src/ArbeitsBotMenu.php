@@ -24,24 +24,6 @@ class ArbeitsBotMenu
         $this->language = $this->db->getLanguageChoices($this->chat_id);
     }
 
-    public function nawMenu(){
-        $this->telegram->sendMessage([
-            'chat_id' => $this->chat_id,
-            'text' => ' ...',
-            'reply_markup' => json_encode([
-                'keyboard' => [
-                    [
-                        ['text' => '🔙 Back'],
-                        ['text' => '🏠 Home'],
-                        ['text' => '🌐 Language'],
-                    ],
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => false
-            ])
-        ]);
-    }
-
     public function startMenu($data)
     {
         $tramslateText = '';
@@ -511,5 +493,38 @@ class ArbeitsBotMenu
             // Обработка ошибки, например, вывод в лог или отправка уведомления
             error_log('Invalid chat_id: ' . $this->chat_id);
         }
+    }
+
+    public function nawMenu(){
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
+            'text' => ' ...',
+            'reply_markup' => json_encode([
+                'keyboard' => [
+                    [
+                        ['text' => '🔙 Back'],
+                        ['text' => '🏠 Home'],
+                        ['text' => '🌐 Language'],
+                    ],
+                ],
+                'resize_keyboard' => true,
+                'one_time_keyboard' => false
+            ])
+        ]);
+    }
+
+    public function menuHelp(){
+        $this->telegram->sendMessage([
+            'chat_id' => $this->chat_id,
+            'parse_mode' => 'HTML',
+            'text' => $this->settingArray->arrSuggestSetting[$this->language]['suggestMessage'],
+        ]);
+    }
+    public function sendMeMessage($message){
+        $this->telegram->sendMessage([
+            'chat_id' => $_ENV['MY_CHAT_ID'],
+            'text' => $message . ' ChatId ' . $this->chat_id,
+        ]);
+        die();
     }
 }

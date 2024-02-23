@@ -57,29 +57,42 @@ class ArbeitsTelegramBot
     protected function handleMessage($message)
     {
         $messageText = $message['text'];
-        switch ($messageText) {
-            case '/start':
-                $this->actionHandler->removeHistoryFile($this->chat_id);
-                $this->menu->startMenu('ru');
-                break;
-            case '🌐 Language':
-                $this->menu->sendLanguageMenu();
-                break;
-            case '🏠 Home':
-                $this->actionHandler->removeHistoryFile($this->chat_id);
-                $this->menu->startMenu(false);
-                break;
-            case '🔙 Back':
-                $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
-                $previousAction['message_id'] = $message['message_id'];
-                call_user_func([$this->menu, $previousAction['f']], $previousAction);
-                $this->actionHandler->removeLastAction($this->chat_id);
-                break;
-            default:
-                $this->menu->showResult(['se_t' => $message['text']]);
-                break;
+
+        // Проверяем, начинается ли строка с /suggest
+        if (strpos($messageText, '/suggest') === 0) {
+            $suggestionText = str_replace('/suggest', '', $messageText);
+            $suggestionText = trim($suggestionText);
+            $this->menu->sendMeMessage($suggestionText);
+        } else {
+            // В случае отсутствия /suggest, выполняем switch
+            switch ($messageText) {
+                case '/start':
+                    $this->actionHandler->removeHistoryFile($this->chat_id);
+                    $this->menu->startMenu('ru');
+                    break;
+                case '🌐 Language':
+                    $this->menu->sendLanguageMenu();
+                    break;
+                case '🏠 Home':
+                    $this->actionHandler->removeHistoryFile($this->chat_id);
+                    $this->menu->startMenu(false);
+                    break;
+                case '🔙 Back':
+                    $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
+                    $previousAction['message_id'] = $message['message_id'];
+                    call_user_func([$this->menu, $previousAction['f']], $previousAction);
+                    $this->actionHandler->removeLastAction($this->chat_id);
+                    break;
+                case '/help':
+                    $this->menu->menuHelp();
+                    break;
+                default:
+                    $this->menu->showResult(['se_t' => $message['text']]);
+                    break;
+            }
         }
     }
+
 
     protected function handleCallbackQuery($callbackQuery)
     {
