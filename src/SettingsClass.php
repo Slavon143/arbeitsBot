@@ -384,12 +384,15 @@ class SettingsClass
     public $arrSettingStartMenuResult = [
         'uk' => [
             'notFount' => 'На жаль, оголошень не знайдено.',
+            'btnNavigate' => 'Виберіть дію:',
         ],
         'ru'=>[
-            'notFount'=>'К сожалению, объявлений не найдено.'
+            'notFount'=>'К сожалению, объявлений не найдено.',
+            'btnNavigate' =>'Выберите действие:'
         ],
         'en'=>[
             'notFount'=>'Sorry, no advertisements found.',
+            'btnNavigate'=>'Choose an action:',
         ]
     ];
 
