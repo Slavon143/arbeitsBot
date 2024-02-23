@@ -27,7 +27,7 @@ class ArbeitsBotMenu
     public function nawMenu(){
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => ' >⌛>',
+            'text' => ' ...',
             'reply_markup' => json_encode([
                 'keyboard' => [
                     [
@@ -37,27 +37,30 @@ class ArbeitsBotMenu
                     ],
                 ],
                 'resize_keyboard' => true,
-                'one_time_keyboard' => true
+                'one_time_keyboard' => false
             ])
         ]);
     }
 
     public function startMenu($data)
     {
-        if (isset($data)){
+        $tramslateText = '';
+        if ($data){
             $tramslateText = $this->settingArray->arrSettingStartMenu[$data];
         }else{
             $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
         }
         $this->nawMenu();
+
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => $tramslateText['title'],
+            'text' => ' 🔄 ' .'<b>'. $tramslateText['title'] .'</b>',
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => [
                     [
-                        ['text' => $tramslateText['platsbankenButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'pb'])],
-                        ['text' => $tramslateText['webbplatserButton'], 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'joblinks'])],
+                        ['text' => $tramslateText['platsbankenButton'] . ' ➡️', 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'pb'])],
+                        ['text' => $tramslateText['webbplatserButton'] . ' ➡️', 'callback_data' => Helper::arrayToString(['f' => 'showRegion', 'resource' => 'joblinks'])],
                     ]
                 ],
                 'resize_keyboard' => true,
@@ -65,7 +68,6 @@ class ArbeitsBotMenu
             ])
         ]);
     }
-
 
     public function showRegion($param)
     {
@@ -102,7 +104,8 @@ class ArbeitsBotMenu
 
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => $tramslateText['title'],
+            'text' => ' 📍 '. '<b>'.$tramslateText['title'] .'</b>',
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
@@ -139,7 +142,7 @@ class ArbeitsBotMenu
                         $current_column = 0;
                     }
                 }
-                $buttons[] = [['text' => 'Show all', 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'r_id' => $region_id])]];
+                $buttons[] = [['text' => $this->settingArray->arrSettingStartMenuCity[$this->language]['btnShowAll'], 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'r_id' => $region_id])]];
             }
         }
 
@@ -149,7 +152,8 @@ class ArbeitsBotMenu
 
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => $tramslateText['title'],
+            'text' => '🏰 ' . '<b>' . $tramslateText['title'] .'</b>',
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
@@ -211,7 +215,8 @@ class ArbeitsBotMenu
         // Отправляем сообщение с кнопками
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => $tramslateText['title'],
+            'text' => '<b>' . $tramslateText['title'] .'</b>',
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
@@ -253,7 +258,7 @@ class ArbeitsBotMenu
                     $row = [];
                 }
             }
-            $buttons[] = [['text' => 'Show all', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'spec_all' => $occupation_id]+$location)]];
+            $buttons[] = [['text' => $this->settingArray->arrSettingStartMenuCity[$this->language]['btnShowAll'], 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'spec_all' => $occupation_id]+$location)]];
         } else {
             foreach ($occupation as $item) {
                 if ($item['id'] == $occupation_id) {
@@ -274,7 +279,7 @@ class ArbeitsBotMenu
                             $current_column = 0;
                         }
                     }
-                    $buttons[] = [['text' => 'Show all', 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'spec_all' => $occupation_id]+$location)]];
+                    $buttons[] = [['text' => $this->settingArray->arrSettingStartMenuCity[$this->language]['btnShowAll'], 'callback_data' => Helper::arrayToString(['f' => 'showResult', 'spec_all' => $occupation_id]+$location)]];
                 }
             }
             $flag_unicode = Helper::getFlag($this->language);
@@ -288,7 +293,8 @@ class ArbeitsBotMenu
         }
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
-            'text' => $tramslateText['title'],
+            'text' => '<b>' . $tramslateText['title'] .'</b>',
+            'parse_mode' => 'HTML',
             'reply_markup' => json_encode([
                 'inline_keyboard' => $buttons
             ]),
@@ -426,6 +432,7 @@ class ArbeitsBotMenu
 
     public function delMessage($param)
     {
+
         $messageId = $param['message_id'];
         $url = "https://api.telegram.org/bot{$_ENV['TELEGRAM_BOT_TOKEN']}/deleteMessage?chat_id={$this->chat_id}&message_id={$messageId}";
         $ch = curl_init();

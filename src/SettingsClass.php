@@ -425,13 +425,16 @@ class SettingsClass
     ];
     public $arrSettingStartMenuCity = [
         'uk' => [
-            'title' => 'Виберіть місто:'
+            'title' => 'Виберіть місто:',
+            'btnShowAll' => 'Обрати все'
         ],
         'ru'=>[
-            'title'=>'Выберите город:'
+            'title'=>'Выберите город:',
+            'btnShowAll' => 'Выбрать все'
         ],
         'en'=>[
-            'title'=>'Select city:'
+            'title'=>'Select city:',
+            'btnShowAll' => 'Choose all'
         ]
     ];
 

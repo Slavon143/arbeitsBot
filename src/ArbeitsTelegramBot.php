@@ -2,11 +2,8 @@
 
 namespace src;
 
-use src\ActionHandler;
-
 use Telegram\Bot\Api;
 use Symfony\Component\Dotenv\Dotenv;
-
 
 class ArbeitsTelegramBot
 {
@@ -63,13 +60,14 @@ class ArbeitsTelegramBot
         switch ($messageText) {
             case '/start':
                 $this->actionHandler->removeHistoryFile($this->chat_id);
+                $this->menu->startMenu('ru');
                 break;
             case '🌐 Language':
                 $this->menu->sendLanguageMenu();
                 break;
             case '🏠 Home':
                 $this->actionHandler->removeHistoryFile($this->chat_id);
-                $this->menu->startMenu('ru');
+                $this->menu->startMenu(false);
                 break;
             case '🔙 Back':
                 $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
