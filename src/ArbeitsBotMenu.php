@@ -320,6 +320,7 @@ class ArbeitsBotMenu
         if (isset($param['se_t'])) {
             $param['se_t'] = $this->apiTranslate->translate($param['se_t'], '', true);
             $param['se_t'] = strip_tags($param['se_t']);
+            $location['se_t'] = $param['se_t'];
         }
 
         $resource = $this->db->getResourceChoices($this->chat_id);
