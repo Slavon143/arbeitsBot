@@ -279,7 +279,7 @@ class SettingsClass
             'title'=>'Make a selection of resources:',
             'platsbankenButton' => 'Location bank',
             'webbplatserButton'=>'External sites:',
-            'btnNavigatePage'=>'EPage',
+            'btnNavigatePage'=>'Page',
         ]
     ];
     public $arrSettingStartMenuOccupation = [
