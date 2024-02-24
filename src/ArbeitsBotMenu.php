@@ -359,7 +359,7 @@ class ArbeitsBotMenu
             // Отправляем сообщение с клавиатурой
             $this->telegram->sendMessage([
                 'chat_id' => $this->chat_id,
-                'text' => $this->settingArray->arrSettingStartMenu[$this->language]['btnNavigate'],
+                'text' => $this->settingArray->arrSettingStartMenu[$this->language]['btnNavigatePage'],
                 'reply_markup' => json_encode(['inline_keyboard' => [$inlineKeyboard]])
             ]);
         }

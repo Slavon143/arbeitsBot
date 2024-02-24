@@ -266,17 +266,20 @@ class SettingsClass
         'uk'=>[
             'title'=>'Зробіть вибір ресурсів:',
             'platsbankenButton' => 'Банк локацій:',
-            'webbplatserButton'=>'Зовнішні сайти:'
+            'webbplatserButton'=>'Зовнішні сайти:',
+            'btnNavigatePage'=>'Сторінка',
         ],
         'ru'=>[
             'title'=>'Сделайте выбор ресурсов:',
             'platsbankenButton' => 'Банк локаций:',
-            'webbplatserButton'=>'Внешние сайты:'
+            'webbplatserButton'=>'Внешние сайты:',
+            'btnNavigatePage'=>'Страница',
         ],
         'en' =>[
             'title'=>'Make a selection of resources:',
             'platsbankenButton' => 'Location bank',
-            'webbplatserButton'=>'External sites:'
+            'webbplatserButton'=>'External sites:',
+            'btnNavigatePage'=>'EPage',
         ]
     ];
     public $arrSettingStartMenuOccupation = [
