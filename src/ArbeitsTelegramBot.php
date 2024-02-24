@@ -12,8 +12,9 @@ class ArbeitsTelegramBot
     protected $telegram;
     protected $chat_id;
     protected $menu;
-
+    protected $settingArray;
     protected $actionHandler;
+    protected $language;
 
     public function __construct()
     {
@@ -25,6 +26,8 @@ class ArbeitsTelegramBot
         $this->chat_id = $this->extractChatId($this->update);
         $this->actionHandler = new ActionHandler(__DIR__ . '/../db/database.db');
         $this->menu = new ArbeitsBotMenu($this->chat_id, $this->telegram, $this->actionHandler);
+        $this->settingArray = new SettingsClass();
+        $this->language = $this->actionHandler->getLanguageChoices($this->chat_id);
     }
 
     public function listen()
@@ -70,18 +73,24 @@ class ArbeitsTelegramBot
                     $this->actionHandler->removeHistoryFile($this->chat_id);
                     $this->menu->startMenu('ru');
                     break;
-                case '🌐 Language':
+                case '🌐 ' . $this->settingArray->btnNawTranslate[$this->language]['startLanguage']:
                     $this->menu->sendLanguageMenu();
                     break;
                 case '🏠 Home':
                     $this->actionHandler->removeHistoryFile($this->chat_id);
                     $this->menu->startMenu(false);
                     break;
-                case '🔙 Back':
+                case '🔙 ' . $this->settingArray->btnNawTranslate[$this->language]['startBack']:
                     $previousAction = $this->actionHandler->getPreviousAction($this->chat_id);
                     $previousAction['message_id'] = $message['message_id'];
                     call_user_func([$this->menu, $previousAction['f']], $previousAction);
                     $this->actionHandler->removeLastAction($this->chat_id);
+                    break;
+                case $this->settingArray->arrSettingStartMenuRegion[$this->language]['title']:
+                    $this->menu->showRegion([]);
+                    break;
+                case $this->settingArray->arrSettingStartMenuOccupation[$this->language]['title']:
+                    $this->menu->platsbankenShowOccupation([]);
                     break;
                 case '/help':
                     $this->menu->menuHelp();

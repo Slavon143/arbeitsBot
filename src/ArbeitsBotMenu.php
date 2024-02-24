@@ -496,15 +496,28 @@ class ArbeitsBotMenu
     }
 
     public function nawMenu(){
+
+        $lang = '';
+        if (isset($this->language)){
+            $lang = $this->language;
+        }else{
+            $lang = 'ru';
+        }
+
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
             'text' => ' ...',
             'reply_markup' => json_encode([
                 'keyboard' => [
                     [
-                        ['text' => '🔙 Back'],
+                        ['text' => $this->settingArray->arrSettingStartMenuRegion[$lang]['title']],
                         ['text' => '🏠 Home'],
-                        ['text' => '🌐 Language'],
+                        ['text' => $this->settingArray->arrSettingStartMenuOccupation[$lang]['title']],
+                    ],
+                    [
+                        ['text' => '🔙 ' . $this->settingArray->btnNawTranslate[$lang]['startBack']],
+                        ['text' => '🌐 ' . $this->settingArray->btnNawTranslate[$lang]['startLanguage']],
+
                     ],
                 ],
                 'resize_keyboard' => true,
