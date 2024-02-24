@@ -32,7 +32,7 @@ class ArbeitsBotMenu
         }else{
             $tramslateText = $this->settingArray->arrSettingStartMenu[$this->language];
         }
-        $this->nawMenu();
+        $this->nawMenu($data);
 
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
@@ -104,7 +104,7 @@ class ArbeitsBotMenu
         $buttons = [];
 
         // Разбиваем кнопки на два ряда
-        $columns = 2;
+        $columns = 3;
         $current_column = 0;
         $current_row = [];
 
@@ -124,14 +124,13 @@ class ArbeitsBotMenu
                         $current_column = 0;
                     }
                 }
-                $buttons[] = [['text' => $this->settingArray->arrSettingStartMenuCity[$this->language]['btnShowAll'], 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'r_id' => $region_id])]];
+
             }
         }
-
         if (!empty($current_row)) {
             $buttons[] = $current_row;
         }
-
+        $buttons[] = [['text' => $this->settingArray->arrSettingStartMenuCity[$this->language]['btnShowAll'], 'callback_data' => Helper::arrayToString(['f' => 'platsbankenShowOccupation', 'r_id' => $region_id])]];
         $this->telegram->sendMessage([
             'chat_id' => $this->chat_id,
             'text' => '🏰 ' . '<b>' . $tramslateText['title'] .'</b>',
@@ -495,13 +494,13 @@ class ArbeitsBotMenu
         }
     }
 
-    public function nawMenu(){
+    public function nawMenu($data){
 
         $lang = '';
-        if (isset($this->language)){
-            $lang = $this->language;
+        if ($data){
+            $lang = $data;
         }else{
-            $lang = 'ru';
+            $lang = $this->language;
         }
 
         $this->telegram->sendMessage([
@@ -511,7 +510,7 @@ class ArbeitsBotMenu
                 'keyboard' => [
                     [
                         ['text' => $this->settingArray->arrSettingStartMenuRegion[$lang]['title']],
-                        ['text' => '🏠 Home'],
+                        ['text' => '🏠 ' . $this->settingArray->btnNawTranslate[$lang]['startTitle']],
                         ['text' => $this->settingArray->arrSettingStartMenuOccupation[$lang]['title']],
                     ],
                     [

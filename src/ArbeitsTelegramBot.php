@@ -76,7 +76,7 @@ class ArbeitsTelegramBot
                 case '🌐 ' . $this->settingArray->btnNawTranslate[$this->language]['startLanguage']:
                     $this->menu->sendLanguageMenu();
                     break;
-                case '🏠 Home':
+                case '🏠 ' . $this->settingArray->btnNawTranslate[$this->language]['startTitle']:
                     $this->actionHandler->removeHistoryFile($this->chat_id);
                     $this->menu->startMenu(false);
                     break;
